@@ -23,6 +23,7 @@ function setup(pendingFeatures: PendingFeature[]) {
     layers: [],
     pendingFeatures,
     removedFeatures: [],
+    draftFeatures: [],
     activeLayer: undefined,
     selectedFeature: undefined,
     draw: undefined,

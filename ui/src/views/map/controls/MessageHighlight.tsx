@@ -21,6 +21,8 @@ import { LayerContext } from "../LayerContext";
 import { LINE_WIDTH, POINT_RADIUS } from "./haloStyle";
 import { MapSelectionContext } from "../MapSelectionContext";
 import { MapTimeContext } from "../MapTimeContext";
+import { outlineGeometry } from "components/map/enrichment/enrichFeature";
+import { useCreatedForMessage } from "../pending";
 
 const SOURCE_ID = "message-highlight";
 
@@ -62,6 +64,7 @@ export function MessageHighlight({
   const { current: map } = useMap();
   const { asOf } = useContext(MapTimeContext);
   const { onDrawingChange } = useContext(MapSelectionContext);
+  const createdHere = useCreatedForMessage(drawingMessage?.id);
   const { t } = useTranslation();
   const [restoreFeature, restoreState] = useRestoreFeature();
   // The removed feature the user clicked, to offer bringing it back.
@@ -175,7 +178,15 @@ export function MessageHighlight({
     frame([...halos.values()].flatMap((h) => (h.geometry ? [h.geometry] : [])));
   }, [drawingMessage, halos, layer, map, ready]);
 
-  if (!enabled || !drawingMessage || (halos.size === 0 && state.removedFeatures.length === 0)) {
+  const drawnHere = state.pendingFeatures.filter((p) => p.layerId === layer?.id);
+  if (
+    !enabled ||
+    !drawingMessage ||
+    (halos.size === 0 &&
+      state.removedFeatures.length === 0 &&
+      drawnHere.length === 0 &&
+      createdHere.size === 0)
+  ) {
     return null;
   }
 
@@ -187,8 +198,24 @@ export function MessageHighlight({
   for (const f of layerToFeatureCollection(layer).features) {
     const halo = f.id === undefined ? undefined : halos.get(String(f.id));
     if (halo && halo.kind !== "removed") {
-      features.push({ ...f, properties: { halo: halo.kind } });
+      features.push({ ...f, geometry: outlineGeometry(f), properties: { halo: halo.kind } });
+    } else if (!halo && f.id !== undefined && createdHere.has(String(f.id))) {
+      // Created a moment ago for this message: the history has not caught up with it yet.
+      features.push({ ...f, geometry: outlineGeometry(f), properties: { halo: "added" } });
     }
+  }
+  // What is being drawn for the message is its work from the moment it is drawn.
+  for (const p of drawnHere) {
+    features.push({
+      type: "Feature",
+      id: p.id,
+      geometry: outlineGeometry({
+        type: "Feature",
+        geometry: p.geometry,
+        properties: p.properties,
+      }),
+      properties: { halo: "added" },
+    });
   }
   for (const [id, halo] of ghosts) {
     if (halo.kind === "removed" && halo.lastGeometry && !restoring.has(id)) {

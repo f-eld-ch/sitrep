@@ -7,7 +7,7 @@ import { BABS_SPRITE_BASE } from "components/babs/iconResolver";
 import EnrichedLayerFeatures, { EnrichedSymbolSource } from "components/map/EnrichedLayerFeatures";
 import type { Feature, FeatureCollection, GeoJsonProperties, Geometry } from "geojson";
 import { clsx } from "clsx";
-import { first, isEqual, throttle } from "lodash";
+import { first, isEqual, omitBy, throttle } from "lodash";
 import * as maplibre from "maplibre-gl";
 import { setMaxParallelImageRequests, setWorkerCount, setWorkerUrl } from "maplibre-gl";
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
@@ -31,7 +31,6 @@ import type { Layer } from "types/layer";
 import {
   cleanFeature,
   layerToFeatureCollection,
-  useAddFeature,
   useDeleteFeature,
   LIVE_POLL_INTERVAL_MS,
   useLayersForIncident,
@@ -47,7 +46,13 @@ import SearchControl from "./controls/Searchbox";
 import { MapStyleProvider, StyleController, useMapStyle } from "./controls/StyleController";
 import { swisstopoAttributionHtml, toggleAttributionAt } from "./swisstopoAttribution";
 import { MapTimeContext, type DrawingMessage, type MapTime } from "./MapTimeContext";
-import { isPendingFeature, withPendingFeatures } from "./pending";
+import {
+  consumeCreatedForMessage,
+  hasType,
+  isPendingFeature,
+  saveOpenFeature,
+  withPendingFeatures,
+} from "./pending";
 import { TimeLabels } from "./controls/TimeLabels";
 import { FIT_MAX_ZOOM, framingCollection } from "./framing";
 import { clickableLayerIds } from "./controls/clickableLayers";
@@ -55,6 +60,7 @@ import { FeatureSelectionReporter } from "./controls/FeatureSelectionReporter";
 import { MapSelectionContext } from "./MapSelectionContext";
 import { TimeControl } from "./controls/TimeControl";
 import { MessageHighlight, MessageHighlightToggle } from "./controls/MessageHighlight";
+import { DrawControlsLock } from "./controls/DrawControlsLock";
 import { PendingFeaturesGuard } from "./controls/PendingFeaturesGuard";
 import { LayerContext, LayersProvider } from "./LayerContext";
 import { useMapLoaded } from "./useMapLoaded";
@@ -208,8 +214,9 @@ function MapView({ embedded = false, readOnly = false, preferredLayerKind }: Map
         <ScaleControl unit={"metric"} position={"bottom-left"} />
         {!readOnly && !embedded && <ExportControl position="bottom-left" />}
         <Layers readOnly={readOnly} stayOnPreferredLayer={preferredLayerKind !== undefined} />
-        {/* A router has one blocker: the operator view has its own, and nothing is pending there. */}
+        {/* A router has one blocker: the message map's host has its own, which also asks before leaving a message that has work in progress. */}
         {!readOnly && !embedded && <PendingFeaturesGuard />}
+        {!readOnly && <DrawControlsLock />}
         {timelineEnabled && <TimeControl />}
       </MapClass>
     </div>
@@ -613,8 +620,8 @@ function ActiveLayer() {
   const isOwnLayer = activeLayer?.sourceIncidentId === incidentId;
   const drawingAllowed = useDrawingAllowed();
   const featureCollection = useMemo(
-    () => withPendingFeatures(activeLayer, state.pendingFeatures),
-    [activeLayer, state.pendingFeatures],
+    () => withPendingFeatures(activeLayer, state.pendingFeatures, state.draftFeatures),
+    [activeLayer, state.pendingFeatures, state.draftFeatures],
   );
 
   // Enrichment follows the geometry under the cursor, not the last saved one, so the flow
@@ -682,7 +689,11 @@ function ActiveLayer() {
   return (
     <>
       <Draw />
-      <EnrichedLayerFeatures id={state.activeLayer} featureCollection={liveCollection} />
+      <EnrichedLayerFeatures
+        id={state.activeLayer}
+        featureCollection={liveCollection}
+        selectedId={state.selectedFeature}
+      />
     </>
   );
 }
@@ -704,17 +715,38 @@ function Draw() {
     [drawingMessage],
   );
 
-  // Features created in this session for a message. Deleting one of them leaves nothing to show
-  // as a ghost, and the feature history may not list them yet to say so.
-  const createdHere = useRef(new Set<string>());
-
-  const [addFeature] = useAddFeature();
   const [modifyFeature] = useModifyFeature();
   const [deleteFeature] = useDeleteFeature();
+
+  // An object drawn for a message and not saved belongs to that message: it does not follow the
+  // user to the next one, and is not left behind when the message is locked. (The host saves
+  // one that has its type before it moves on.)
+  const drawingMessageId = drawingMessage?.id;
+  const drawingMessageLocked = drawingMessage?.locked;
+  useEffect(() => {
+    if (drawingMessageId === undefined) return;
+
+    return () => dispatch({ type: "CLEAR_PENDING_FEATURES", payload: null });
+  }, [dispatch, drawingMessageId, drawingMessageLocked]);
 
   const onSelectionChange = useCallback(
     (e: FeatureEvent) => {
       const features: Feature[] = e.features;
+
+      // An object that is drawn and not saved yet is not left behind half made. One that has its
+      // type is saved by leaving it; one that has none has nothing to save, so the click is
+      // ignored until it is given a type or discarded. Either way the draw control has already
+      // moved on, so it is put back until the save is done.
+      const open = state.pendingFeatures.find((p) => p.id === state.selectedFeature);
+      if (open !== undefined && !features?.some((f) => f.id?.toString() === open.id)) {
+        if (hasType(open)) saveOpenFeature();
+        safeDrawInvoke(state.draw, (d) => {
+          d.changeMode("simple_select", { featureIds: [open.id] });
+        });
+
+        return;
+      }
+
       if (features?.length > 0) {
         const feature = first(features);
         dispatch({
@@ -725,7 +757,7 @@ function Draw() {
         dispatch({ type: "DESELECT_FEATURE", payload: null });
       }
     },
-    [dispatch],
+    [dispatch, state.draw, state.pendingFeatures, state.selectedFeature],
   );
 
   const onCreate = useCallback(
@@ -738,10 +770,12 @@ function Draw() {
       for (const f of createdFeatures) {
         const feature = cleanFeature(f);
 
-        // Free drawing: the feature stays local until it is saved (with the time it should
-        // take effect at). It remains in the draw control, which keeps it selected, so the
-        // symbol picker and the save popup open on it.
-        if (drawingMessage === undefined && f.id !== undefined) {
+        // A new object stays local until it is saved, on the free map and for a message alike (with
+        // the time it should take effect at, or the message's). It remains in the draw control,
+        // which keeps it selected, so the type picker and the save panel open on it.
+        if (f.id !== undefined) {
+          // The message has work in progress from the moment something is drawn for it.
+          if (drawingMessage) onDrawingChange?.();
           dispatch({
             type: "ADD_PENDING_FEATURE",
             payload: {
@@ -754,40 +788,29 @@ function Draw() {
             },
           });
           dispatch({ type: "SELECT_FEATURE", payload: { id: f.id.toString() } });
-
-          continue;
-        }
-
-        // Drawing for a message: created at once, at the message's time.
-        onDrawingChange?.();
-        void addFeature({
-          layerId: layer,
-          geometry: feature.geometry,
-          clientKey: String(f.id ?? ""),
-          properties: feature.properties,
-          incidentId: incidentId ?? "",
-          change,
-          asOf,
-        }).then(({ featureId }) => {
-          createdHere.current.add(featureId);
-          dispatch({ type: "SELECT_FEATURE", payload: { id: featureId } });
-        });
-
-        if (f.id !== undefined) {
-          state.draw?.delete([f.id.toString()]);
         }
       }
     },
-    [addFeature, asOf, change, dispatch, drawingMessage, incidentId, onDrawingChange, state.draw],
+    [dispatch, drawingMessage, onDrawingChange],
   );
 
   const onUpdate = useCallback(
     (e: FeatureEvent) => {
-      const isPropertyOnly = e.action === "featureDetail";
+      const isGeometryDraft = (id: string) =>
+        state.draftFeatures.some((d) => d.id === id && d.geometry);
       const isGeometryOnly = e.action === "reverseDirection";
+      // The saved state of a feature, to tell whether pressing save changes anything.
+      const savedFeatures = layerToFeatureCollection(
+        first(state.layers.filter((l) => l.layer.id === state.activeLayer).map((l) => l.layer)),
+      ).features;
+      const meaningful = (properties: GeoJsonProperties) =>
+        omitBy(properties, (v) => v === undefined || v === "");
       const updatedFeatures: Feature[] = e.features;
       for (const f of updatedFeatures) {
         const feature = cleanFeature(f);
+        const id = String(feature.id ?? "");
+        // A saved feature with a drafted geometry (a reversed line) sends it along with the rest.
+        const isPropertyOnly = e.action === "featureDetail" && !isGeometryDraft(id);
 
         // Not saved yet: the edit only changes the local copy.
         if (isPendingFeature(state.pendingFeatures, feature.id?.toString())) {
@@ -803,7 +826,37 @@ function Draw() {
           continue;
         }
 
+        // Edited in the panel: kept as a draft until the user saves.
+        if (e.draft) {
+          dispatch({
+            type: "SET_DRAFT_FEATURE",
+            payload: {
+              id,
+              geometry: e.action === "featureDetail" ? undefined : feature.geometry,
+              properties: isGeometryOnly ? undefined : feature.properties,
+            },
+          });
+
+          continue;
+        }
+
+        // Save with nothing changed (and no other time chosen) sends nothing.
+        const saved = savedFeatures.find((x) => String(x.id) === id);
+        if (
+          e.save &&
+          e.effectiveAt === undefined &&
+          saved !== undefined &&
+          isEqual(meaningful(cleanFeature(saved).properties), meaningful(feature.properties)) &&
+          isEqual(cleanFeature(saved).geometry, feature.geometry)
+        ) {
+          dispatch({ type: "CLEAR_DRAFT_FEATURE", payload: { id } });
+
+          continue;
+        }
+
         if (drawingMessage) onDrawingChange?.();
+        // What is sent now is the draft; the cache shows it at once through the optimistic response.
+        dispatch({ type: "CLEAR_DRAFT_FEATURE", payload: { id } });
 
         void modifyFeature({
           id: String(feature.id ?? ""),
@@ -825,6 +878,9 @@ function Draw() {
       incidentId,
       modifyFeature,
       onDrawingChange,
+      state.activeLayer,
+      state.draftFeatures,
+      state.layers,
       state.pendingFeatures,
     ],
   );
@@ -845,7 +901,8 @@ function Draw() {
         if (drawingMessage) onDrawingChange?.();
 
         const removedId = String(feature.id ?? "");
-        const placedThisSession = createdHere.current.delete(removedId);
+        const placedThisSession =
+          drawingMessage !== undefined && consumeCreatedForMessage(removedId, drawingMessage.id);
         if (drawingMessage && !placedThisSession) {
           // Shown as a ghost at once; the feature history confirms it a moment later.
           dispatch({
@@ -899,6 +956,7 @@ function Draw() {
       const featureCollection: FeatureCollection = withPendingFeatures(
         state.layers.find((l) => l.layer.id === state.activeLayer)?.layer,
         state.pendingFeatures,
+        state.draftFeatures,
       );
 
       safeDrawInvoke(state.draw, (d) => {
@@ -920,6 +978,7 @@ function Draw() {
     state.activeLayer,
     state.selectedFeature,
     state.pendingFeatures,
+    state.draftFeatures,
   ]);
 
   // this is the effect which syncs the drawings
@@ -1102,6 +1161,13 @@ export interface FeatureEvent {
   features: Feature<Geometry, GeoJsonProperties>[];
   /** "featureDetail" = property-only change; "reverseDirection" = geometry-only change; absent or other = geometry+properties change */
   action?: string;
+  /**
+   * A change to a saved feature made in the feature panel: kept locally and shown, and sent when
+   * the user saves (an event without this flag).
+   */
+  draft?: boolean;
+  /** The user pressed save in the panel: nothing is sent when nothing differs from what is saved. */
+  save?: boolean;
   /** When a property edit takes effect on the timeline; absent for "now" (or the message's time). */
   effectiveAt?: Date;
 }

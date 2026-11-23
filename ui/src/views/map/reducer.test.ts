@@ -231,3 +231,23 @@ describe("removedFeaturesReducer", () => {
     expect(removedFeaturesReducer(state, { type: "DESELECT_FEATURE", payload: null })).toBe(state);
   });
 });
+
+describe("pendingFeaturesReducer clearing", () => {
+  it("drops every object not saved yet, and leaves an empty list alone", () => {
+    const some = [
+      {
+        id: "a",
+        layerId: "l",
+        geometry: { type: "Point" as const, coordinates: [8, 47] },
+        properties: {},
+      },
+    ];
+    expect(pendingFeaturesReducer(some, { type: "CLEAR_PENDING_FEATURES", payload: null })).toEqual(
+      [],
+    );
+    const none: typeof some = [];
+    expect(pendingFeaturesReducer(none, { type: "CLEAR_PENDING_FEATURES", payload: null })).toBe(
+      none,
+    );
+  });
+});

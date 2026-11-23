@@ -2,7 +2,7 @@ import type { FeatureCollection } from "geojson";
 import { useMemo } from "react";
 import { Layer, Source } from "react-map-gl/maplibre";
 import { ARROW } from "./enrichment/arrow";
-import { enrichFeature } from "./enrichment/enrichFeature";
+import { enrichFeature, selectionFill } from "./enrichment/enrichFeature";
 import { EnrichLineStringMap, EnrichPolygonMap } from "./enrichment/registry";
 
 /**
@@ -20,9 +20,11 @@ import { EnrichLineStringMap, EnrichPolygonMap } from "./enrichment/registry";
 interface EnrichedFeaturesProps {
   id: string | undefined;
   featureCollection: FeatureCollection;
+  /** The feature being edited, which gets the wash of its own shape where the draw control cannot. */
+  selectedId?: string | number;
 }
 
-const EnrichedSymbolSource = ({ id, featureCollection }: EnrichedFeaturesProps) => {
+const EnrichedSymbolSource = ({ id, featureCollection, selectedId }: EnrichedFeaturesProps) => {
   // Includes the selected feature. Skipping it used to make the indicator vanish for exactly
   // as long as you were editing the geometry that determines it, which is when it is most
   // useful — and on the active layer this now re-runs on every animation frame of a vertex
@@ -31,14 +33,24 @@ const EnrichedSymbolSource = ({ id, featureCollection }: EnrichedFeaturesProps) 
     () => ({
       type: "FeatureCollection",
       features: featureCollection.features
-        .filter((f) => f.properties?.deletedAt === null)
-        .flatMap(enrichFeature),
+        // A feature drawn but not saved yet has no `deletedAt` at all: it is not deleted either.
+        .filter((f) => !f.properties?.deletedAt)
+        .flatMap((f) => {
+          const wash = f.id !== undefined && f.id === selectedId ? selectionFill(f) : undefined;
+          return wash ? [wash, ...enrichFeature(f)] : enrichFeature(f);
+        }),
     }),
-    [featureCollection],
+    [featureCollection, selectedId],
   );
 
   return (
     <Source key={id} type="geojson" data={enrichedFC}>
+      <Layer
+        id={`${id}-enriched-selection`}
+        type="fill"
+        filter={["==", ["geometry-type"], "Polygon"]}
+        paint={{ "fill-color": "#fbb03b", "fill-opacity": 0.3 }}
+      />
       {/*
         Shafts and emphasised outline. Painted to match `gl-draw-line-inactive-solidlines` in
         styleGenerator, so a shaft is the same stroke a brandUebergriffErfolgt line gets.
@@ -54,7 +66,7 @@ const EnrichedSymbolSource = ({ id, featureCollection }: EnrichedFeaturesProps) 
         }}
         paint={{
           "line-color": ["coalesce", ["get", "color"], "#000000"],
-          "line-opacity": 0.7,
+          "line-opacity": ["coalesce", ["get", "opacity"], 0.7],
           // Data-driven so the emphasised stretch of outline can share this layer with the
           // arrow shafts instead of needing one of its own.
           "line-width": ["coalesce", ["get", "width"], 2],

@@ -1,4 +1,10 @@
-import { getGroup, isBabsIconId, listCategories, listIcons } from "@f-eld-ch/babs-core";
+import {
+  type BabsCategoryNumber,
+  getGroup,
+  isBabsIconId,
+  listCategories,
+  listIcons,
+} from "@f-eld-ch/babs-core";
 import { describe, expect, it } from "vitest";
 import { isPickableCategory, isPickableIcon } from "./excludedIcons";
 import { LineTypes } from "./lineAndZoneTypes";
@@ -31,7 +37,9 @@ describe("CATEGORY_ICON", () => {
   });
 
   it("never points at an icon hidden by the exclusion list", () => {
-    const excluded = Object.entries(CATEGORY_ICON).filter(([, id]) => !isPickableIcon(id));
+    const excluded = Object.entries(CATEGORY_ICON)
+      .filter(([category]) => isPickableCategory(category as BabsCategoryNumber))
+      .filter(([, id]) => !isPickableIcon(id));
     expect(excluded).toEqual([]);
   });
 });

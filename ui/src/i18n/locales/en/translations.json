@@ -156,6 +156,7 @@
   "map": "situation map",
   "mapview": {
     "rotate": "Turn direction",
+    "arrowPosition": "Arrow position along the line",
     "rotation": "Rotation",
     "layer": "Layer",
     "unlock": "Unlock symbol",
@@ -165,6 +166,18 @@
       "noLayersFound": "No compatible layers found. WMS Server must support EPSG:3857 projection."
     },
     "back": "Back",
+    "iconPicker": {
+      "search": "Search symbols",
+      "placeholder": "Search symbols …",
+      "clear": "Clear search",
+      "results_one": "{{count}} result",
+      "results_other": "{{count}} results",
+      "none": "No symbols for “{{query}}”",
+      "recent": "Recently used",
+      "categories": "Categories",
+      "change": "Change",
+      "hint": "Type to search. Choose with ↑ ↓, Enter places the symbol, Esc goes back."
+    },
     "labels": {
       "kennzeichnung": "Designation",
       "ortsbezeichnung": "Location",

@@ -1,10 +1,11 @@
-import { renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { IncidentContext } from "utils";
 import de from "../../i18n/locales/de/translations.json";
 import { LayerContext, type LayerState } from "./LayerContext";
 import { MapTimeContext, type MapTime } from "./MapTimeContext";
+import { consumeCreatedForMessage } from "./pending";
 import { usePendingFeature } from "./usePendingFeature";
 
 const mocks = vi.hoisted(() => ({
@@ -35,6 +36,7 @@ const layerState = (pendingIds: string[]): LayerState => ({
     properties: { icon: "x" },
   })),
   removedFeatures: [],
+  draftFeatures: [],
   activeLayer: undefined,
   selectedFeature: undefined,
   draw: undefined,
@@ -74,21 +76,44 @@ describe("usePendingFeature", () => {
     expect(render("p1").result.current?.earliest).toEqual(createdAt);
   });
 
-  it("reports the saving state and a translated error", () => {
+  it("reports the saving state", () => {
     mocks.addState.loading = true;
+
+    expect(render("p1").result.current?.saving).toBe(true);
+  });
+
+  it("reports a failed save as a translated error, for the object it was for only", async () => {
+    mocks.addFeature.mockRejectedValue(new Error("nope"));
     mocks.addState.error = { code: "FORBIDDEN" };
+    const view = render("p1");
+    expect(view.result.current?.error).toBeUndefined();
 
-    const actions = render("p1").result.current;
+    act(() => view.result.current?.onSave({ icon: "y" }, undefined));
+    await waitFor(() => expect(view.result.current?.error).toBe(de.errors.FORBIDDEN));
 
-    expect(actions?.saving).toBe(true);
-    expect(actions?.error).toBe(de.errors.FORBIDDEN);
+    // saving again starts clean
+    mocks.addFeature.mockReturnValue(new Promise(() => {}));
+    act(() => view.result.current?.onSave({ icon: "y" }, undefined));
+    expect(view.result.current?.error).toBeUndefined();
+  });
+
+  it("does not show the error of one object on the next one drawn", async () => {
+    mocks.addFeature.mockRejectedValue(new Error("nope"));
+    mocks.addState.error = { code: "FORBIDDEN" };
+    const first = render("p1");
+    act(() => first.result.current?.onSave({ icon: "y" }, undefined));
+    await waitFor(() => expect(first.result.current?.error).toBe(de.errors.FORBIDDEN));
+
+    // the command's state is shared; another object is another panel
+    const second = render("p2");
+    expect(second.result.current?.error).toBeUndefined();
   });
 
   it("has no error while nothing failed", () => {
     expect(render("p1").result.current?.error).toBeUndefined();
   });
 
-  it("saves the feature under its draw id, and selects the saved one in place of the local copy", async () => {
+  it("saves the feature under its draw id, then drops the local copy and closes the panel", async () => {
     mocks.addFeature.mockResolvedValue({ featureId: "saved-1" });
     const asOf = new Date("2026-01-15T09:00:00Z");
     const effectiveAt = new Date("2026-01-15T08:30:00Z");
@@ -107,8 +132,27 @@ describe("usePendingFeature", () => {
     await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(2));
     expect(dispatch.mock.calls).toEqual([
       [{ type: "REMOVE_PENDING_FEATURE", payload: { id: "p1" } }],
-      [{ type: "SELECT_FEATURE", payload: { id: "saved-1" } }],
+      [{ type: "DESELECT_FEATURE", payload: null }],
     ]);
+  });
+
+  it("creates a feature drawn for a message in one request, with the message's time", async () => {
+    mocks.addFeature.mockResolvedValue({ featureId: "saved-1" });
+    const drawingMessage = { id: "msg-1", time: new Date("2026-01-15T09:00:00Z") };
+
+    // a time picked by mistake does not count: the message's time is used
+    render("p1", { drawingMessage }).result.current?.onSave(
+      { icon: "y" },
+      new Date("2026-01-15T10:00:00Z"),
+    );
+
+    expect(mocks.addFeature).toHaveBeenCalledWith(
+      expect.objectContaining({ clientKey: "p1", change: { messageId: "msg-1" } }),
+    );
+    await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(2));
+    // deleting the feature leaves no ghost
+    expect(consumeCreatedForMessage("saved-1", "msg-other")).toBe(false);
+    expect(consumeCreatedForMessage("saved-1", "msg-1")).toBe(true);
   });
 
   it("saves for now when no time is given", () => {

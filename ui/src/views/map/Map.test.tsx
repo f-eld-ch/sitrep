@@ -1,7 +1,8 @@
-import { act, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import type { Feature, FeatureCollection, Geometry } from "geojson";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { markCreatedForMessage, registerSaveOfOpenFeature } from "./pending";
 import { readyResult } from "api/testing/results";
 import type { Incident } from "types";
 import type { Layer } from "types/layer";
@@ -176,6 +177,7 @@ vi.mock("./controls/TimeControl", () => ({
 vi.mock("./controls/PendingFeaturesGuard", () => ({
   PendingFeaturesGuard: () => <div data-testid="pending-guard" />,
 }));
+vi.mock("./controls/DrawControlsLock", () => ({ DrawControlsLock: () => null }));
 vi.mock("./controls/FeatureSelectionReporter", () => ({
   FeatureSelectionReporter: (props: { clickLayerIds: string[]; showRing: boolean }) => {
     mocks.reporterProps = props;
@@ -1064,6 +1066,66 @@ describe("drawing", () => {
       expect(mocks.addFeature).not.toHaveBeenCalled();
     });
 
+    describe("an object that is drawn and not saved yet", () => {
+      const draw = () => state().draw as unknown as { changeMode: ReturnType<typeof vi.fn> };
+      const bare = (id: string): Feature => ({ ...drawn(id), properties: {} });
+      const save = vi.fn();
+
+      beforeEach(() => {
+        save.mockClear();
+        registerSaveOfOpenFeature(save);
+        dispatch({ type: "SET_DRAW", payload: { draw: fakeDraw() } });
+      });
+
+      afterEach(() => registerSaveOfOpenFeature(undefined));
+
+      describe("that has no type yet", () => {
+        beforeEach(() => {
+          call("onCreate", { features: [bare("d1")] }, "L1");
+          draw().changeMode.mockClear();
+        });
+
+        it("cannot be left: a click on the empty map or on another object is ignored", () => {
+          call("onSelectionChange", { features: [] });
+          call("onSelectionChange", { features: [drawn("other")] });
+
+          expect(state().selectedFeature).toBe("d1");
+          expect(draw().changeMode).toHaveBeenCalledWith("simple_select", { featureIds: ["d1"] });
+          // there is nothing to save yet
+          expect(save).not.toHaveBeenCalled();
+        });
+
+        it("takes a selection that still includes it", () => {
+          call("onSelectionChange", { features: [bare("d1")] });
+
+          expect(state().selectedFeature).toBe("d1");
+          expect(draw().changeMode).not.toHaveBeenCalled();
+        });
+
+        it("can be left again once it is discarded", () => {
+          dispatch({ type: "REMOVE_PENDING_FEATURE", payload: { id: "d1" } });
+          call("onSelectionChange", { features: [] });
+
+          expect(state().selectedFeature).toBeUndefined();
+        });
+      });
+
+      describe("that has its type", () => {
+        beforeEach(() => {
+          call("onCreate", { features: [drawn("d1")] }, "L1");
+          draw().changeMode.mockClear();
+        });
+
+        it("is saved when the user clicks away, and stays selected until that is done", () => {
+          call("onSelectionChange", { features: [] });
+
+          expect(save).toHaveBeenCalledTimes(1);
+          expect(state().selectedFeature).toBe("d1");
+          expect(draw().changeMode).toHaveBeenCalledWith("simple_select", { featureIds: ["d1"] });
+        });
+      });
+    });
+
     it("ignores a feature drawn without an active layer", () => {
       call("onCreate", { features: [drawn("d1")] }, undefined);
 
@@ -1131,6 +1193,89 @@ describe("drawing", () => {
       );
     });
 
+    describe("a saved feature edited in the panel", () => {
+      const f1 = (
+        properties: Record<string, unknown> = { icon: "x" },
+        geometry = point(8, 47),
+      ) => ({
+        ...drawn("f1", geometry),
+        properties: { ...drawn("f1").properties, ...properties },
+      });
+
+      beforeEach(async () => {
+        cleanup();
+        setLayers(makeLayer("L1"));
+        renderMap();
+        await flush();
+      });
+
+      it("keeps a change as a draft, shown at once and not sent", () => {
+        call("onUpdate", {
+          features: [f1({ icon: "y" })],
+          action: "featureDetail",
+          draft: true,
+        });
+
+        expect(state().draftFeatures).toEqual([
+          { id: "f1", geometry: undefined, properties: { icon: "y" } },
+        ]);
+        expect(mocks.modifyFeature).not.toHaveBeenCalled();
+      });
+
+      it("sends the draft in one update when saved, and drops it", () => {
+        call("onUpdate", { features: [f1({ icon: "y" })], action: "featureDetail", draft: true });
+        call("onUpdate", { features: [f1({ icon: "y" })], action: "featureDetail", save: true });
+
+        expect(mocks.modifyFeature).toHaveBeenCalledExactlyOnceWith(
+          expect.objectContaining({ id: "f1", geometry: undefined, properties: { icon: "y" } }),
+        );
+        expect(state().draftFeatures).toEqual([]);
+      });
+
+      it("sends a drafted geometry along with the properties", () => {
+        call("onUpdate", {
+          features: [f1({}, point(9, 48))],
+          action: "reverseDirection",
+          draft: true,
+        });
+        call("onUpdate", { features: [f1({}, point(9, 48))], action: "featureDetail", save: true });
+
+        expect(mocks.modifyFeature).toHaveBeenCalledExactlyOnceWith(
+          expect.objectContaining({ id: "f1", geometry: point(9, 48) }),
+        );
+      });
+
+      it("sends nothing when saved without a change", () => {
+        call("onUpdate", { features: [f1()], action: "featureDetail", save: true });
+
+        expect(mocks.modifyFeature).not.toHaveBeenCalled();
+      });
+
+      it("sends nothing when a drafted change was taken back before saving", () => {
+        call("onUpdate", { features: [f1({ icon: "y" })], action: "featureDetail", draft: true });
+        call("onUpdate", { features: [f1()], action: "featureDetail", save: true });
+
+        expect(mocks.modifyFeature).not.toHaveBeenCalled();
+        expect(state().draftFeatures).toEqual([]);
+      });
+
+      it("sends a save that only chooses another time", () => {
+        const effectiveAt = new Date("2026-01-15T08:30:00Z");
+        call("onUpdate", { features: [f1()], action: "featureDetail", save: true, effectiveAt });
+
+        expect(mocks.modifyFeature).toHaveBeenCalledWith(
+          expect.objectContaining({ change: { effectiveAt } }),
+        );
+      });
+
+      it("drops a draft when the selection moves on", () => {
+        call("onUpdate", { features: [f1({ icon: "y" })], action: "featureDetail", draft: true });
+        dispatch({ type: "DESELECT_FEATURE", payload: null });
+
+        expect(state().draftFeatures).toEqual([]);
+      });
+    });
+
     it("deletes a saved feature on the server", () => {
       call("onDelete", { features: [drawn("saved")] });
 
@@ -1156,32 +1301,41 @@ describe("drawing", () => {
 
   describe("events of the draw control, drawing for a message", () => {
     const onDrawingChange = vi.fn();
+    let view: ReturnType<typeof renderMap>;
     beforeEach(() => {
       onDrawingChange.mockReset();
       setLayers(makeLayer("L1", { kind: "MESSAGE_MAP" }));
-      renderMap({ drawingMessage: message, onDrawingChange });
+      view = renderMap({ drawingMessage: message, onDrawingChange });
       dispatch({ type: "SET_DRAW", payload: { draw: fakeDraw() } });
     });
 
-    it("creates a new feature at once, for the message, and removes the draw control's copy", async () => {
+    it("keeps a new feature local until it is saved, as on the free map", () => {
       call("onCreate", { features: [drawn("d1")] }, "L1");
-      await flush();
 
-      expect(onDrawingChange).toHaveBeenCalledTimes(1);
-      expect(mocks.addFeature).toHaveBeenCalledExactlyOnceWith({
-        layerId: "L1",
-        geometry: point(9, 46),
-        clientKey: "d1",
-        properties: { icon: "x" },
-        incidentId: "inc-1",
-        change: { messageId: "msg-1" },
-        asOf: undefined,
-      });
-      expect((state().draw as unknown as { delete: () => void }).delete).toHaveBeenCalledWith([
-        "d1",
+      expect(state().pendingFeatures).toEqual([
+        { id: "d1", layerId: "L1", geometry: point(9, 46), properties: { icon: "x" } },
       ]);
+      expect(state().selectedFeature).toBe("d1");
+      expect(mocks.addFeature).not.toHaveBeenCalled();
+      // the message has work in progress from the moment something is drawn for it
+      expect(onDrawingChange).toHaveBeenCalledTimes(1);
+    });
+
+    it("drops what is drawn and not saved when the message is left, not carrying it to the next", () => {
+      call("onCreate", { features: [drawn("d1")] }, "L1");
+      expect(state().pendingFeatures).toHaveLength(1);
+
+      view.update({ drawingMessage: { ...message, id: "msg-2" }, onDrawingChange });
+
       expect(state().pendingFeatures).toEqual([]);
-      expect(state().selectedFeature).toBe("server-id");
+    });
+
+    it("drops it too when the message gets locked", () => {
+      call("onCreate", { features: [drawn("d1")] }, "L1");
+
+      view.update({ drawingMessage: { ...message, locked: true }, onDrawingChange });
+
+      expect(state().pendingFeatures).toEqual([]);
     });
 
     it("shows a feature deleted for the message as a ghost at once", () => {
@@ -1201,9 +1355,8 @@ describe("drawing", () => {
       );
     });
 
-    it("leaves no ghost for a feature that was drawn for the message in this session", async () => {
-      call("onCreate", { features: [drawn("d1")] }, "L1");
-      await flush();
+    it("leaves no ghost for a feature that was created for the message in this session", () => {
+      markCreatedForMessage("server-id", "msg-1");
 
       call("onDelete", { features: [drawn("server-id")] });
 

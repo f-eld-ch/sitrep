@@ -3,6 +3,7 @@ import { useEffect, type ReactNode } from "react";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import MessageMapView from "./MessageMapView";
+import { registerSaveOfOpenFeature } from "views/map/pending";
 
 const division = { id: "d1", name: "Karte", description: "Nachrichtenkarte", kind: "MESSAGE_MAP" };
 type Acknowledgement = { divisionId: string; acknowledgedAt: Date; acknowledgedBy: string };
@@ -154,6 +155,20 @@ describe("MessageMapView navigation guard", () => {
     expect(router.state.location.pathname).toBe("/i/x");
     fireEvent.click(screen.getByRole("button", { name: /leave|verlassen/i }));
     expect(router.state.location.pathname).toBe("/other");
+  });
+
+  it("saves a new object that has its type before leaving the message, and before finishing it", async () => {
+    const save = vi.fn();
+    registerSaveOfOpenFeature(save);
+    setup();
+    fireEvent.click(screen.getByText("draw"));
+    fireEvent.click(screen.getByText("pick m2"));
+    fireEvent.click(screen.getByRole("button", { name: /leave|verlassen/i }));
+    expect(save).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(screen.getByRole("button", { name: /messageMap.finish|abschliessen/i }));
+    await waitFor(() => expect(save).toHaveBeenCalledTimes(2));
+    registerSaveOfOpenFeature(undefined);
   });
 
   it("clears the warning once the message is finished", async () => {

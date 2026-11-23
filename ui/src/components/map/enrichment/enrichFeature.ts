@@ -1,7 +1,8 @@
 import bearing from "@turf/bearing";
 import { point } from "@turf/helpers";
-import type { Feature, Position } from "geojson";
+import type { Feature, Geometry, Position } from "geojson";
 import { buildFlowArrow } from "./flowArrow";
+import { smoothRing } from "./smooth";
 import { EnrichLineStringMap, EnrichPolygonMap } from "./registry";
 import { buildSlideArrow } from "./slideArrow";
 import type { SyntheticFeature } from "./types";
@@ -76,11 +77,44 @@ export const enrichFeature = (f: SyntheticFeature): SyntheticFeature[] => {
       );
     }
     if (enrich?.slideArrow) {
-      features.push(...buildSlideArrow(f.id, coordinates, enrich.slideArrow, f.properties?.color));
+      features.push(
+        ...buildSlideArrow(
+          f.id,
+          coordinates,
+          enrich.slideArrow,
+          f.properties?.color,
+          typeof f.properties?.arrowAt === "number" ? f.properties.arrowAt : undefined,
+        ),
+      );
     }
   }
 
   if (f.geometry.type === "Polygon" || f.geometry.type === "MultiPolygon") {
+    const smooth = EnrichPolygonMap[f.properties?.zoneType]?.smooth === true;
+    if (smooth) {
+      // Every ring of every part, holes included: the style leaves the straight stroke of these
+      // zone types out, so this is the only outline there is.
+      const rings: Position[][] =
+        f.geometry.type === "Polygon" ? f.geometry.coordinates : f.geometry.coordinates.flat();
+      rings.forEach((ring, index) => {
+        const open = ring.slice(0, ring.length > 1 ? -1 : undefined);
+        if (open.length < 3) {
+          features.push({
+            type: "Feature",
+            id: `${f.id}:outline-${index}`,
+            geometry: { type: "LineString", coordinates: ring },
+            properties: { parent: f.id, color: f.properties?.color, opacity: 1 },
+          });
+          return;
+        }
+        features.push({
+          type: "Feature",
+          id: `${f.id}:outline-${index}`,
+          geometry: { type: "LineString", coordinates: smoothRing(open) },
+          properties: { parent: f.id, color: f.properties?.color, opacity: 1 },
+        });
+      });
+    }
     const flowArrow = EnrichPolygonMap[f.properties?.zoneType]?.flowArrow;
     if (flowArrow !== undefined) {
       // Outer rings only. A hole is interior detail, and an arrow springing off one would
@@ -102,6 +136,8 @@ export const enrichFeature = (f: SyntheticFeature): SyntheticFeature[] => {
             ring,
             flowArrow,
             f.properties?.color,
+            smooth,
+            typeof f.properties?.arrowAt === "number" ? f.properties.arrowAt : undefined,
           ),
         );
       });
@@ -110,3 +146,49 @@ export const enrichFeature = (f: SyntheticFeature): SyntheticFeature[] => {
 
   return features;
 };
+
+const smoothClosed = (ring: Position[]): Position[] => {
+  const open = ring.slice(0, ring.length > 1 ? -1 : undefined);
+  return open.length < 3 ? ring : smoothRing(open);
+};
+
+/**
+ * The wash that shows a selected zone, shaped like the curve it is drawn with. For a zone drawn
+ * as a curve the draw control's own straight wash and dotted outline are left out of the style
+ * (they would show a different shape), so this stands in for them. Nothing for any other zone.
+ */
+export const selectionFill = (f: Feature): SyntheticFeature | undefined => {
+  if (EnrichPolygonMap[f.properties?.zoneType]?.smooth !== true) {
+    return undefined;
+  }
+
+  if (f.geometry.type === "Polygon") {
+    return {
+      type: "Feature",
+      id: `${f.id}:selection`,
+      geometry: { type: "Polygon", coordinates: f.geometry.coordinates.map(smoothClosed) },
+      properties: { parent: f.id },
+    };
+  }
+  if (f.geometry.type === "MultiPolygon") {
+    return {
+      type: "Feature",
+      id: `${f.id}:selection`,
+      geometry: {
+        type: "MultiPolygon",
+        coordinates: f.geometry.coordinates.map((part) => part.map(smoothClosed)),
+      },
+      properties: { parent: f.id },
+    };
+  }
+
+  return undefined;
+};
+
+/**
+ * The geometry a highlight (a halo, a selection ring) is drawn around: for a zone drawn as a
+ * curve the curve, otherwise what was drawn. A ring around the straight edges would not follow
+ * the outline that is on the map.
+ */
+export const outlineGeometry = <G extends Geometry>(f: Feature<G>): Geometry =>
+  selectionFill(f as Feature)?.geometry ?? f.geometry;

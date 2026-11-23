@@ -1,78 +1,23 @@
-import type { BabsCategoryNumber, BabsIconId } from "@f-eld-ch/babs-core";
+import {
+  type BabsCategoryNumber,
+  type BabsIconId,
+  isPointCategory,
+  isPointIcon,
+} from "@f-eld-ch/babs-core";
 
 /**
  * What the icon picker hides.
  *
- * Excluding something here only removes it from the *picker*. It stays in the sprite and
- * keeps rendering on existing features, and the line and zone controllers draw their
- * thumbnails directly, so nothing here can orphan persisted data or blank a thumbnail.
+ * The catalogue says how each symbol is used (`getIconUsage` in `@f-eld-ch/babs-core`): the
+ * picker offers only the plain point symbols. Line and zone symbols belong to their own
+ * controls, and the "Beispiel" illustrations are documentation. Hiding a symbol here only
+ * removes it from the *picker*: it stays in the sprite and keeps rendering on existing
+ * features, so nothing can orphan persisted data or blank a thumbnail.
  */
-
-/**
- * Whole categories the icon picker does not offer.
- *
- * Category 6 (Bewegungen) describes how a line is drawn, not a point symbol. Its icons
- * are the thumbnails in the line controller, which turns a choice there into a `lineType`
- * that the style resolves to the right pattern and end marker. Offering them as
- * placeable point icons as well would be misleading.
- */
-export const EXCLUDED_CATEGORIES: ReadonlySet<BabsCategoryNumber> = new Set<BabsCategoryNumber>([
-  "6",
-]);
-
-/**
- * Individual icons the picker does not offer.
- *
- * These are all symbols that belong to a different control: area and line symbology, or
- * the *Beispiel* illustrations that accompany a *Signatur* in the catalogue rather than
- * being placeable in their own right.
- *
- * Typed as `BabsIconId`, so an id that disappears upstream becomes a compile error rather
- * than a silently dead entry.
- */
-export const EXCLUDED_BABS_ICON_IDS: ReadonlySet<BabsIconId> = new Set<BabsIconId>([
-  // Zone symbology — drawn via the zone controller as a `zoneType`.
-  "1110", // Brandzone Flächenbrand
-  "1112", // Zerstörte Zone einer Ortschaft
-  "1114", // Schadengebiet - Schadenraum
-  "1115", // Überschwemmtes Gebiet
-  "5126", // Absperrung Einsatzraum
-  // Group 14 contaminated areas: each plain symbol is drawn inside its zone by the zone
-  // layer, and each Beispiel variant is that zone's picker thumbnail.
-  "1401", // Biologisch verseuchtes Gebiet
-  "1401b",
-  "1402", // Chemievergiftete Zone flüssig - sesshaft
-  "1402b",
-  "1403", // Chemievergiftetes Gebiet gasförmig - flüchtig
-  "1403b",
-  "1404", // Radioaktives Gebiet
-  "1404b",
-
-  // Line symbology — drawn via the line controller as a `lineType`.
-  "1113", // Rutschgebiet
-  "1201", // Str erschwert befahrbar - begehbar
-  "1202", // Str nicht befahrbar - schwer begehbar
-  "1203", // Str unpassierbar - gesperrt
-  "1111a", // Brandübergriffsgefahr - Signatur
-  "1111b", // Brandübergriff erfolgt - Signatur
-  "1116a", // Trümmerbereich - Signatur
-  "1116b", // Trümmerbereich - Beispiel, the line controller's thumbnail
-
-  // Catalogue illustrations: a "Beispiel" shows how a "Signatur" is used on a map, so it
-  // is documentation rather than a symbol to place.
-  "1105b", // Explosionsherd-Beispiel
-  "1106a", // Brand einzelnes Gebäude - Signatur
-  "1106b", // Brand einzelnes Gebäude - Beispiel
-  "1107a", // Brand mehrerer Gebäude - Signatur
-  "1107b", // Brand mehrerer Gebäude - Beispiel
-  "1108", // Brandübergriffsgefahr - Beispiel
-  "1109", // Brandübergriff erfolgt - Beispiel
-  "2109b", // Gefahrentafel mit UN-Nummer
-]);
 
 /** True when an icon should be offered in the picker. */
-export const isPickableIcon = (id: BabsIconId): boolean => !EXCLUDED_BABS_ICON_IDS.has(id);
+export const isPickableIcon = (id: BabsIconId): boolean => isPointIcon(id);
 
 /** True when a category should be offered in the picker at all. */
 export const isPickableCategory = (category: BabsCategoryNumber): boolean =>
-  !EXCLUDED_CATEGORIES.has(category);
+  isPointCategory(category);

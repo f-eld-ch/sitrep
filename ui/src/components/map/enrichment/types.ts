@@ -60,4 +60,10 @@ export interface EnrichLineConfig {
 /** What a zone type gets decorated with, keyed by `properties.zoneType`. */
 export interface EnrichPolygonConfig {
   flowArrow?: ArrowConfig;
+  /**
+   * Draw the outline as soft curves through the vertices instead of straight edges. The stored
+   * geometry stays as drawn; only the stroke is rounded, so the straight one is left out of the
+   * map style for these zone types (see `SMOOTHED_ZONE_NAMES`).
+   */
+  smooth?: boolean;
 }

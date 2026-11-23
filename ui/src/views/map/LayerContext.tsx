@@ -9,6 +9,7 @@ import {
   type LayersAction,
   layersReducer,
   pendingFeaturesReducer,
+  draftFeaturesReducer,
   removedFeaturesReducer,
   selectedFeatureReducer,
   wmsReducer,
@@ -70,9 +71,17 @@ export interface RemovedFeature {
   properties: GeoJsonProperties;
 }
 
+/** A change to a saved feature that has not been sent yet; see `draftFeaturesReducer`. */
+export interface DraftFeature {
+  id: string;
+  geometry?: Geometry;
+  properties?: GeoJsonProperties;
+}
+
 export interface LayerState {
   layers: LayersState;
   pendingFeatures: PendingFeature[];
+  draftFeatures: DraftFeature[];
   removedFeatures: RemovedFeature[];
   activeLayer: string | undefined;
   selectedFeature: SelectedFeatureState;
@@ -83,6 +92,7 @@ export interface LayerState {
 const initialState: LayerState = {
   layers: [],
   pendingFeatures: [],
+  draftFeatures: [],
   removedFeatures: [],
   activeLayer: undefined,
   selectedFeature: undefined,
@@ -132,6 +142,7 @@ const mainReducer: Reducer<LayerState, LayersAction> = (
   const next = {
     layers: layersReducer(state.layers, action),
     pendingFeatures: pendingFeaturesReducer(state.pendingFeatures, action),
+    draftFeatures: draftFeaturesReducer(state.draftFeatures, action),
     removedFeatures: removedFeaturesReducer(state.removedFeatures, action),
     activeLayer: activeLayerReducer(state.activeLayer, action),
     selectedFeature: selectedFeatureReducer(state.selectedFeature, action),
@@ -141,6 +152,7 @@ const mainReducer: Reducer<LayerState, LayersAction> = (
 
   return next.layers === state.layers &&
     next.pendingFeatures === state.pendingFeatures &&
+    next.draftFeatures === state.draftFeatures &&
     next.removedFeatures === state.removedFeatures &&
     next.activeLayer === state.activeLayer &&
     next.selectedFeature === state.selectedFeature &&

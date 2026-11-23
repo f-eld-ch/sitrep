@@ -27,6 +27,7 @@ function setup(featureId: string | undefined, layers: LayerState["layers"]) {
     layers,
     pendingFeatures: [],
     removedFeatures: [],
+    draftFeatures: [],
     activeLayer: undefined,
     selectedFeature: undefined,
     draw: undefined,

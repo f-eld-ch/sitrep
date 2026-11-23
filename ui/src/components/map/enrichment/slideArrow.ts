@@ -42,6 +42,14 @@ const SLIDE_ARROW_SIDE = 1;
  * into it.
  */
 const SLIDE_ARROW_GAP_RATIO = 0.12;
+/**
+ * Where along the line the arrow attaches, as a fraction of its length, and how close to either
+ * end it may go: at an end the local direction is that of a single segment, and the arrow
+ * would leave the line at a corner.
+ */
+export const SLIDE_ARROW_DEFAULT_AT = 0.5;
+export const SLIDE_ARROW_MIN_AT = 0.05;
+export const SLIDE_ARROW_MAX_AT = 0.95;
 /** Below this a line is a stray click, not a boundary: `along` degenerates and the bearing is noise. */
 const SLIDE_MIN_LINE_KM = 1e-6;
 /** See `spanBeforeCrossing`. */
@@ -62,6 +70,8 @@ export const buildSlideArrow = (
   config: ArrowConfig,
   /** The feature's own stroke colour, so a recoloured boundary keeps its arrow in step. */
   featureColor: string | undefined,
+  /** Where along the line the arrow attaches: a fraction of its length, the middle by default. */
+  at: number = SLIDE_ARROW_DEFAULT_AT,
 ): SyntheticFeature[] => {
   if (coordinates.length < 2) {
     return [];
@@ -75,10 +85,17 @@ export const buildSlideArrow = (
     return [];
   }
 
-  const half = total / 2;
-  const base = along(line, half, KM);
-  const before = along(line, Math.max(half - total * SLIDE_BEARING_SPAN, 0), KM);
-  const after = along(line, Math.min(half + total * SLIDE_BEARING_SPAN, total), KM);
+  // The arrow stays at right angles to the line wherever it is put: the bearing below is measured
+  // on the line at the attach point, so moving the point moves the direction with it.
+  const attach =
+    total *
+    Math.min(
+      Math.max(Number.isFinite(at) ? at : SLIDE_ARROW_DEFAULT_AT, SLIDE_ARROW_MIN_AT),
+      SLIDE_ARROW_MAX_AT,
+    );
+  const base = along(line, attach, KM);
+  const before = along(line, Math.max(attach - total * SLIDE_BEARING_SPAN, 0), KM);
+  const after = along(line, Math.min(attach + total * SLIDE_BEARING_SPAN, total), KM);
 
   // Points away from the line, on the teeth's side of it. The shaft is then laid out back
   // along this bearing, so the arrow approaches the line rather than springing off it.

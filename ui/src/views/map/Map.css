@@ -224,3 +224,10 @@
 .maplibregl-ctrl-bottom-left {
   z-index: 11;
 }
+
+/* While an object is drawn but not saved, its panel is the only place to go on: the draw buttons
+   (point, line, polygon, bin) are hidden. See DrawControlsLock. The navigation and fullscreen
+   groups are other controls and have no draw buttons in them. */
+.sitrep-draw-locked .mapboxgl-ctrl-group:has(.mapbox-gl-draw_ctrl-draw-btn) {
+  display: none;
+}
