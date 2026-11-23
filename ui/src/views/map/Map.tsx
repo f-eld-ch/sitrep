@@ -465,7 +465,9 @@ function LayerFetcher({
   const { asOf, drawingMessage } = useContext(MapTimeContext);
   const syncedLayers = useRef<Layer[] | undefined>(undefined);
   const syncedIncidentId = useRef<string | undefined>(undefined);
-  const preferredKind = drawingMessage ? "MESSAGE_MAP" : (preferredLayerKind ?? "STANDARD");
+  // The Lagebild opens on the Nachrichtenkarte, read-only; a layer to draw on is picked in the
+  // layer menu. Only a map that asks for another kind starts there.
+  const preferredKind = drawingMessage ? "MESSAGE_MAP" : (preferredLayerKind ?? "MESSAGE_MAP");
 
   // A fixed point in the past does not change while it is looked at, so it is not polled. The
   // operator's own drawing updates the cache directly; others' arrive on a slow poll.
