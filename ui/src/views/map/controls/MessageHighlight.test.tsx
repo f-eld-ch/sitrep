@@ -220,8 +220,15 @@ describe("MessageHighlight halos", () => {
     expect(flood.geometry.coordinates[0].length).toBeGreaterThan(square.length * 5);
   });
 
+  it("does not mark a feature created for another message", () => {
+    markCreatedForMessage("kept", "msg-other");
+    setup();
+
+    expect(screen.queryByTestId("source-message-highlight")).not.toBeInTheDocument();
+  });
+
   it("marks a feature created a moment ago before the history lists it", () => {
-    markCreatedForMessage("kept");
+    markCreatedForMessage("kept", "msg-1");
     setup();
 
     expect(sourceFeatures().map((f) => [f.id, f.properties.halo])).toEqual([["kept", "added"]]);

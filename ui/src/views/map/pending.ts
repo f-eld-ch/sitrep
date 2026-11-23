@@ -80,41 +80,49 @@ export const saveOpenFeature = (): boolean => {
 };
 
 /**
- * Features created in this session for a message. Deleting one of them leaves nothing to show as
- * a ghost, and the feature history may not list them yet to say so.
+ * Features created in this session for a message, by message. Deleting one of them for that same
+ * message leaves nothing to show as a ghost, and the feature history may not list them yet to say
+ * so. For any other message the feature is older, and is shown as removed as usual.
  */
-const createdForMessage = new Set<string>();
+let created: ReadonlyMap<string, ReadonlySet<string>> = new Map();
+const listeners = new Set<() => void>();
+const NONE: ReadonlySet<string> = new Set();
 
-export const markCreatedForMessage = (id: string): void => {
-  createdForMessage.add(id);
-  createdHere = new Set([...createdHere, id]);
-  createdHereListeners.forEach((listener) => listener());
+const publish = (next: ReadonlyMap<string, ReadonlySet<string>>) => {
+  created = next;
+  listeners.forEach((listener) => listener());
 };
 
-/** True, once, for a feature that was created in this session for a message. */
-export const consumeCreatedForMessage = (id: string): boolean => createdForMessage.delete(id);
+export const markCreatedForMessage = (featureId: string, messageId: string): void => {
+  publish(new Map(created).set(messageId, new Set([...(created.get(messageId) ?? []), featureId])));
+};
 
-/**
- * Features this session created for a message, as a set that changes identity whenever one is
- * added. The map marks them as the message's work at once, before the history says so.
- */
-let createdHere: ReadonlySet<string> = new Set();
-const createdHereListeners = new Set<() => void>();
+/** True, once, for a feature that was created in this session for this message. */
+export const consumeCreatedForMessage = (featureId: string, messageId: string): boolean => {
+  const ids = created.get(messageId);
+  if (!ids?.has(featureId)) return false;
+  publish(new Map(created).set(messageId, new Set([...ids].filter((id) => id !== featureId))));
 
-const subscribeToCreatedHere = (listener: () => void) => {
-  createdHereListeners.add(listener);
+  return true;
+};
+
+const subscribe = (listener: () => void) => {
+  listeners.add(listener);
 
   return () => {
-    createdHereListeners.delete(listener);
+    listeners.delete(listener);
   };
 };
 
-export const useCreatedForMessage = (): ReadonlySet<string> =>
-  useSyncExternalStore(subscribeToCreatedHere, () => createdHere);
+/**
+ * The features this session created for the message, as a set that changes identity whenever one
+ * is added. The map marks them as the message's work at once, before the history says so.
+ */
+export const useCreatedForMessage = (messageId: string | undefined): ReadonlySet<string> => {
+  const all = useSyncExternalStore(subscribe, () => created);
 
-/** Forgets the features created for a message, e.g. when another message is taken up. */
-export const clearCreatedForMessage = (): void => {
-  createdForMessage.clear();
-  createdHere = new Set();
-  createdHereListeners.forEach((listener) => listener());
+  return (messageId ? all.get(messageId) : undefined) ?? NONE;
 };
+
+/** Forgets the features created for any message (for tests, and a fresh start). */
+export const clearCreatedForMessage = (): void => publish(new Map());

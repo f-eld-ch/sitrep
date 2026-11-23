@@ -128,7 +128,8 @@ describe("usePendingFeature", () => {
     );
     await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(2));
     // deleting the feature leaves no ghost
-    expect(consumeCreatedForMessage("saved-1")).toBe(true);
+    expect(consumeCreatedForMessage("saved-1", "msg-other")).toBe(false);
+    expect(consumeCreatedForMessage("saved-1", "msg-1")).toBe(true);
   });
 
   it("saves for now when no time is given", () => {

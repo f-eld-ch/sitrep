@@ -50,7 +50,7 @@ export function usePendingFeature(
         asOf,
       })
         .then(({ featureId: savedId }) => {
-          if (drawingMessage) markCreatedForMessage(savedId);
+          if (drawingMessage) markCreatedForMessage(savedId, drawingMessage.id);
           dispatch({ type: "REMOVE_PENDING_FEATURE", payload: { id: pending.id } });
           dispatch({ type: "DESELECT_FEATURE", payload: null });
         })

@@ -890,7 +890,8 @@ function Draw() {
         if (drawingMessage) onDrawingChange?.();
 
         const removedId = String(feature.id ?? "");
-        const placedThisSession = consumeCreatedForMessage(removedId);
+        const placedThisSession =
+          drawingMessage !== undefined && consumeCreatedForMessage(removedId, drawingMessage.id);
         if (drawingMessage && !placedThisSession) {
           // Shown as a ghost at once; the feature history confirms it a moment later.
           dispatch({

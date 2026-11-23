@@ -1338,7 +1338,7 @@ describe("drawing", () => {
     });
 
     it("leaves no ghost for a feature that was created for the message in this session", () => {
-      markCreatedForMessage("server-id");
+      markCreatedForMessage("server-id", "msg-1");
 
       call("onDelete", { features: [drawn("server-id")] });
 

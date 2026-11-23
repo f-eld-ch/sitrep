@@ -64,7 +64,7 @@ export function MessageHighlight({
   const { current: map } = useMap();
   const { asOf } = useContext(MapTimeContext);
   const { onDrawingChange } = useContext(MapSelectionContext);
-  const createdHere = useCreatedForMessage();
+  const createdHere = useCreatedForMessage(drawingMessage?.id);
   const { t } = useTranslation();
   const [restoreFeature, restoreState] = useRestoreFeature();
   // The removed feature the user clicked, to offer bringing it back.
