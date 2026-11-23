@@ -47,7 +47,7 @@ import SearchControl from "./controls/Searchbox";
 import { MapStyleProvider, StyleController, useMapStyle } from "./controls/StyleController";
 import { swisstopoAttributionHtml, toggleAttributionAt } from "./swisstopoAttribution";
 import { MapTimeContext, type DrawingMessage, type MapTime } from "./MapTimeContext";
-import { isPendingFeature, withPendingFeatures } from "./pending";
+import { hasType, isPendingFeature, saveOpenFeature, withPendingFeatures } from "./pending";
 import { TimeLabels } from "./controls/TimeLabels";
 import { FIT_MAX_ZOOM, framingCollection } from "./framing";
 import { clickableLayerIds } from "./controls/clickableLayers";
@@ -722,11 +722,13 @@ function Draw() {
     (e: FeatureEvent) => {
       const features: Feature[] = e.features;
 
-      // An object that is drawn and not saved yet stays selected until it is saved or discarded
-      // in its panel: selecting away would leave it behind half made. The draw control has
-      // already moved on, so it is put back.
+      // An object that is drawn and not saved yet is not left behind half made. One that has its
+      // type is saved by leaving it; one that has none has nothing to save, so the click is
+      // ignored until it is given a type or discarded. Either way the draw control has already
+      // moved on, so it is put back until the save is done.
       const open = state.pendingFeatures.find((p) => p.id === state.selectedFeature);
       if (open !== undefined && !features?.some((f) => f.id?.toString() === open.id)) {
+        if (hasType(open)) saveOpenFeature();
         safeDrawInvoke(state.draw, (d) => {
           d.changeMode("simple_select", { featureIds: [open.id] });
         });

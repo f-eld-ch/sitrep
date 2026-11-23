@@ -2,6 +2,7 @@ import { act, cleanup, fireEvent, render, screen, within } from "@testing-librar
 import type { Feature, FeatureCollection, Geometry } from "geojson";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { registerSaveOfOpenFeature } from "./pending";
 import { readyResult } from "api/testing/results";
 import type { Incident } from "types";
 import type { Layer } from "types/layer";
@@ -1067,40 +1068,61 @@ describe("drawing", () => {
 
     describe("an object that is drawn and not saved yet", () => {
       const draw = () => state().draw as unknown as { changeMode: ReturnType<typeof vi.fn> };
+      const bare = (id: string): Feature => ({ ...drawn(id), properties: {} });
+      const save = vi.fn();
 
       beforeEach(() => {
+        save.mockClear();
+        registerSaveOfOpenFeature(save);
         dispatch({ type: "SET_DRAW", payload: { draw: fakeDraw() } });
-        call("onCreate", { features: [drawn("d1")] }, "L1");
-        draw().changeMode.mockClear();
       });
 
-      it("stays selected when the user clicks on the empty map", () => {
-        call("onSelectionChange", { features: [] });
+      afterEach(() => registerSaveOfOpenFeature(undefined));
 
-        expect(state().selectedFeature).toBe("d1");
-        // the draw control had moved on: it is put back on the object
-        expect(draw().changeMode).toHaveBeenCalledWith("simple_select", { featureIds: ["d1"] });
+      describe("that has no type yet", () => {
+        beforeEach(() => {
+          call("onCreate", { features: [bare("d1")] }, "L1");
+          draw().changeMode.mockClear();
+        });
+
+        it("cannot be left: a click on the empty map or on another object is ignored", () => {
+          call("onSelectionChange", { features: [] });
+          call("onSelectionChange", { features: [drawn("other")] });
+
+          expect(state().selectedFeature).toBe("d1");
+          expect(draw().changeMode).toHaveBeenCalledWith("simple_select", { featureIds: ["d1"] });
+          // there is nothing to save yet
+          expect(save).not.toHaveBeenCalled();
+        });
+
+        it("takes a selection that still includes it", () => {
+          call("onSelectionChange", { features: [bare("d1")] });
+
+          expect(state().selectedFeature).toBe("d1");
+          expect(draw().changeMode).not.toHaveBeenCalled();
+        });
+
+        it("can be left again once it is discarded", () => {
+          dispatch({ type: "REMOVE_PENDING_FEATURE", payload: { id: "d1" } });
+          call("onSelectionChange", { features: [] });
+
+          expect(state().selectedFeature).toBeUndefined();
+        });
       });
 
-      it("stays selected when the user clicks on another object", () => {
-        call("onSelectionChange", { features: [drawn("other")] });
+      describe("that has its type", () => {
+        beforeEach(() => {
+          call("onCreate", { features: [drawn("d1")] }, "L1");
+          draw().changeMode.mockClear();
+        });
 
-        expect(state().selectedFeature).toBe("d1");
-        expect(draw().changeMode).toHaveBeenCalledWith("simple_select", { featureIds: ["d1"] });
-      });
+        it("is saved when the user clicks away, and stays selected until that is done", () => {
+          call("onSelectionChange", { features: [] });
 
-      it("takes a selection that still includes it", () => {
-        call("onSelectionChange", { features: [drawn("d1")] });
-
-        expect(state().selectedFeature).toBe("d1");
-        expect(draw().changeMode).not.toHaveBeenCalled();
-      });
-
-      it("can be left again once it is discarded", () => {
-        dispatch({ type: "REMOVE_PENDING_FEATURE", payload: { id: "d1" } });
-        call("onSelectionChange", { features: [] });
-
-        expect(state().selectedFeature).toBeUndefined();
+          expect(save).toHaveBeenCalledTimes(1);
+          expect(state().selectedFeature).toBe("d1");
+          expect(draw().changeMode).toHaveBeenCalledWith("simple_select", { featureIds: ["d1"] });
+        });
       });
     });
 

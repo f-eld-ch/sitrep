@@ -43,3 +43,37 @@ export function withPendingFeatures(
 
 export const isPendingFeature = (pending: PendingFeature[], id: string | undefined): boolean =>
   id !== undefined && pending.some((p) => p.id === id);
+
+/** Whether a drawn feature has been told what it is: its symbol, line type or area type. */
+export function hasType(feature: {
+  geometry: { type: string };
+  properties?: Record<string, unknown> | null;
+}): boolean {
+  const { geometry, properties } = feature;
+  if (geometry.type === "Point") return Boolean(properties?.icon);
+  if (geometry.type === "LineString") return Boolean(properties?.lineType);
+  if (geometry.type === "Polygon" || geometry.type === "MultiPolygon") {
+    return Boolean(properties?.zoneType);
+  }
+
+  return true;
+}
+
+/**
+ * How leaving a new object that has its type saves it. The panel holds what has been typed and
+ * the time chosen, so it is the one that knows how to save; the map asks it when the selection
+ * moves away. Only one new object is open at a time.
+ */
+let saveOpen: (() => void) | undefined;
+
+export const registerSaveOfOpenFeature = (save: (() => void) | undefined): void => {
+  saveOpen = save;
+};
+
+/** Saves the open new object, if the panel registered a way to. */
+export const saveOpenFeature = (): boolean => {
+  if (!saveOpen) return false;
+  saveOpen();
+
+  return true;
+};

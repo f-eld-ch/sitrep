@@ -15,10 +15,11 @@ import type { Feature, GeoJsonProperties, Geometry } from "geojson";
 import dayjs from "dayjs";
 import { isEqual, isUndefined, omitBy } from "lodash";
 import { Button } from "components/ui";
-import { useCallback, useContext, useId, useState } from "react";
+import { useCallback, useContext, useEffect, useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useMap } from "react-map-gl/maplibre";
 import { LayerContext } from "../LayerContext";
+import { hasType, registerSaveOfOpenFeature } from "../pending";
 
 const isEmptyValue = (v: unknown): boolean => isUndefined(v) || v === "";
 const UN_SIGN_ICON = "2109a";
@@ -183,6 +184,18 @@ export function FeatureForm({ selectedFeature, onUpdate, pending, changeTime }: 
     commit();
     close();
   }, [buildProperties, close, commit, effectiveInput, effectiveTouched, pending]);
+
+  // Leaving a new object that has its type saves it: the map asks for it.
+  const savesOnLeave = pending !== undefined && hasType(selectedFeature);
+  const saving = pending?.saving;
+  useEffect(() => {
+    if (!savesOnLeave) return;
+    registerSaveOfOpenFeature(() => {
+      if (!saving) saveAndClose();
+    });
+
+    return () => registerSaveOfOpenFeature(undefined);
+  }, [savesOnLeave, saving, saveAndClose]);
 
   const onReverseDirection = useCallback(() => {
     if (selectedFeature.geometry.type !== "LineString") return;

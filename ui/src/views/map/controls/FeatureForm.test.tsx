@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { aliasFor } from "components/babs/iconResolver";
 import de from "../../../i18n/locales/de/translations.json";
 import { LayerContext, type LayerState } from "../LayerContext";
+import { saveOpenFeature } from "../pending";
 import { FeatureForm, type PendingFeatureActions } from "./FeatureForm";
 
 function lookup(key: string): string {
@@ -155,6 +156,39 @@ describe("FeatureForm fields", () => {
 
 describe("FeatureForm closing a new object", () => {
   const actions = { saving: false, onSave: vi.fn(), onDiscard: vi.fn() };
+
+  it("saves what was typed when the map asks for it, once the object has its type", () => {
+    renderPopup(point({ icon: aliasFor("1101") }), { pending: actions });
+    fireEvent.change(label("Beschreibung / Details"), { target: { value: "Mitte" } });
+
+    expect(saveOpenFeature()).toBe(true);
+    expect(actions.onSave).toHaveBeenCalledWith(
+      expect.objectContaining({ name: "Mitte" }),
+      undefined,
+    );
+  });
+
+  it("has nothing to save for an object without a type", () => {
+    renderPopup(point({}), { pending: actions });
+
+    expect(saveOpenFeature()).toBe(false);
+    expect(actions.onSave).not.toHaveBeenCalled();
+  });
+
+  it("does not save a second time while the first save is under way", () => {
+    renderPopup(point({ icon: aliasFor("1101") }), { pending: { ...actions, saving: true } });
+
+    saveOpenFeature();
+
+    expect(actions.onSave).not.toHaveBeenCalled();
+  });
+
+  it("stops offering the save when the panel goes away", () => {
+    const { unmount } = renderPopup(point({ icon: aliasFor("1101") }), { pending: actions });
+    unmount();
+
+    expect(saveOpenFeature()).toBe(false);
+  });
 
   it("is not done with Escape: a new object is left through save or discard", () => {
     renderPopup(point({ icon: aliasFor("1101") }), { pending: actions });
