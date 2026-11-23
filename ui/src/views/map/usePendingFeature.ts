@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
 import { useAddFeature } from "api";
@@ -26,15 +26,20 @@ export function usePendingFeature(
   const { asOf, drawingMessage } = useContext(MapTimeContext);
   const { state: incidentState } = useContext(IncidentContext);
   const [addFeature, addState] = useAddFeature();
+  // The command's state is shared by every object drawn, so a failure is remembered for the object
+  // it was for: the next one drawn does not open with it.
+  const [failedFor, setFailedFor] = useState<string | undefined>();
 
   const pending = state.pendingFeatures.find((p) => p.id === featureId);
   if (!pending) return undefined;
 
   return {
     saving: addState.loading,
-    error: addState.error ? t(`errors.${addState.error.code}`) : undefined,
+    error:
+      addState.error && failedFor === pending.id ? t(`errors.${addState.error.code}`) : undefined,
     earliest: incidentState.incident?.createdAt,
     onSave: (properties, effectiveAt) => {
+      setFailedFor(undefined);
       void addFeature({
         layerId: pending.layerId,
         clientKey: pending.id,
@@ -55,7 +60,8 @@ export function usePendingFeature(
           dispatch({ type: "DESELECT_FEATURE", payload: null });
         })
         .catch(() => {
-          // addState.error renders the message in the popup; the feature stays local.
+          // addState.error renders the message in the panel; the feature stays local.
+          setFailedFor(pending.id);
         });
     },
     onDiscard: () => {

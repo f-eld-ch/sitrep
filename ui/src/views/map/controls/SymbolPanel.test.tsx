@@ -52,6 +52,29 @@ const search = (text: string) =>
     target: { value: text },
   });
 
+describe("SymbolPanel form", () => {
+  it("keeps the form mounted, out of sight, while another symbol is looked at", () => {
+    render(
+      <SymbolPanel
+        feature={point({ icon: aliasFor("1101") })}
+        onUpdate={onUpdate}
+        form={<input aria-label="Beschreibung" defaultValue="" />}
+      />,
+    );
+    const field = screen.getByLabelText("Beschreibung");
+    fireEvent.change(field, { target: { value: "Mitte" } });
+
+    fireEvent.click(screen.getByRole("button", { name: "Ändern" }));
+    expect(screen.getByLabelText("Beschreibung", { selector: "input" })).not.toBeVisible();
+
+    fireEvent.click(screen.getByRole("button", { name: "Abbrechen" }));
+    // the same field, with what was typed
+    expect(screen.getByLabelText("Beschreibung")).toBe(field);
+    expect(field).toHaveValue("Mitte");
+    expect(field).toBeVisible();
+  });
+});
+
 describe("SymbolPanel", () => {
   it("renders nothing without a feature, for a line, or before the catalogue is ready", () => {
     const { container, rerender } = render(<SymbolPanel feature={undefined} onUpdate={onUpdate} />);

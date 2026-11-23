@@ -214,7 +214,7 @@ function MapView({ embedded = false, readOnly = false, preferredLayerKind }: Map
         <ScaleControl unit={"metric"} position={"bottom-left"} />
         {!readOnly && !embedded && <ExportControl position="bottom-left" />}
         <Layers readOnly={readOnly} stayOnPreferredLayer={preferredLayerKind !== undefined} />
-        {/* A router has one blocker: the operator view has its own, and nothing is pending there. */}
+        {/* A router has one blocker: the message map's host has its own, which also asks before leaving a message that has work in progress. */}
         {!readOnly && !embedded && <PendingFeaturesGuard />}
         {!readOnly && <DrawControlsLock />}
         {timelineEnabled && <TimeControl />}
@@ -717,6 +717,17 @@ function Draw() {
 
   const [modifyFeature] = useModifyFeature();
   const [deleteFeature] = useDeleteFeature();
+
+  // An object drawn for a message and not saved belongs to that message: it does not follow the
+  // user to the next one, and is not left behind when the message is locked. (The host saves
+  // one that has its type before it moves on.)
+  const drawingMessageId = drawingMessage?.id;
+  const drawingMessageLocked = drawingMessage?.locked;
+  useEffect(() => {
+    if (drawingMessageId === undefined) return;
+
+    return () => dispatch({ type: "CLEAR_PENDING_FEATURES", payload: null });
+  }, [dispatch, drawingMessageId, drawingMessageLocked]);
 
   const onSelectionChange = useCallback(
     (e: FeatureEvent) => {

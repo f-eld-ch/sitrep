@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { IncidentContext } from "utils";
@@ -76,14 +76,37 @@ describe("usePendingFeature", () => {
     expect(render("p1").result.current?.earliest).toEqual(createdAt);
   });
 
-  it("reports the saving state and a translated error", () => {
+  it("reports the saving state", () => {
     mocks.addState.loading = true;
+
+    expect(render("p1").result.current?.saving).toBe(true);
+  });
+
+  it("reports a failed save as a translated error, for the object it was for only", async () => {
+    mocks.addFeature.mockRejectedValue(new Error("nope"));
     mocks.addState.error = { code: "FORBIDDEN" };
+    const view = render("p1");
+    expect(view.result.current?.error).toBeUndefined();
 
-    const actions = render("p1").result.current;
+    act(() => view.result.current?.onSave({ icon: "y" }, undefined));
+    await waitFor(() => expect(view.result.current?.error).toBe(de.errors.FORBIDDEN));
 
-    expect(actions?.saving).toBe(true);
-    expect(actions?.error).toBe(de.errors.FORBIDDEN);
+    // saving again starts clean
+    mocks.addFeature.mockReturnValue(new Promise(() => {}));
+    act(() => view.result.current?.onSave({ icon: "y" }, undefined));
+    expect(view.result.current?.error).toBeUndefined();
+  });
+
+  it("does not show the error of one object on the next one drawn", async () => {
+    mocks.addFeature.mockRejectedValue(new Error("nope"));
+    mocks.addState.error = { code: "FORBIDDEN" };
+    const first = render("p1");
+    act(() => first.result.current?.onSave({ icon: "y" }, undefined));
+    await waitFor(() => expect(first.result.current?.error).toBe(de.errors.FORBIDDEN));
+
+    // the command's state is shared; another object is another panel
+    const second = render("p2");
+    expect(second.result.current?.error).toBeUndefined();
   });
 
   it("has no error while nothing failed", () => {

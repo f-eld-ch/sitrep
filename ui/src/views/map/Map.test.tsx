@@ -1301,10 +1301,11 @@ describe("drawing", () => {
 
   describe("events of the draw control, drawing for a message", () => {
     const onDrawingChange = vi.fn();
+    let view: ReturnType<typeof renderMap>;
     beforeEach(() => {
       onDrawingChange.mockReset();
       setLayers(makeLayer("L1", { kind: "MESSAGE_MAP" }));
-      renderMap({ drawingMessage: message, onDrawingChange });
+      view = renderMap({ drawingMessage: message, onDrawingChange });
       dispatch({ type: "SET_DRAW", payload: { draw: fakeDraw() } });
     });
 
@@ -1318,6 +1319,23 @@ describe("drawing", () => {
       expect(mocks.addFeature).not.toHaveBeenCalled();
       // the message has work in progress from the moment something is drawn for it
       expect(onDrawingChange).toHaveBeenCalledTimes(1);
+    });
+
+    it("drops what is drawn and not saved when the message is left, not carrying it to the next", () => {
+      call("onCreate", { features: [drawn("d1")] }, "L1");
+      expect(state().pendingFeatures).toHaveLength(1);
+
+      view.update({ drawingMessage: { ...message, id: "msg-2" }, onDrawingChange });
+
+      expect(state().pendingFeatures).toEqual([]);
+    });
+
+    it("drops it too when the message gets locked", () => {
+      call("onCreate", { features: [drawn("d1")] }, "L1");
+
+      view.update({ drawingMessage: { ...message, locked: true }, onDrawingChange });
+
+      expect(state().pendingFeatures).toEqual([]);
     });
 
     it("shows a feature deleted for the message as a ghost at once", () => {

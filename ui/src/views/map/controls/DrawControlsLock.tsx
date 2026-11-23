@@ -13,8 +13,8 @@ export const DRAW_LOCKED_CLASS = "sitrep-draw-locked";
  * picking one would abandon the object half made. The buttons cannot be changed once the draw
  * control exists, which is why this is a class on the map and a CSS rule.
  *
- * Only the free map has unsaved objects. On the message map every object is saved when it is
- * drawn, so nothing is ever pending there and the buttons stay, the bin included.
+ * The same on the free map and on the message map, where an object drawn for a message is also
+ * kept local until it is saved.
  */
 export function DrawControlsLock() {
   const { state } = useContext(LayerContext);

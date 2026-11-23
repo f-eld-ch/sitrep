@@ -22,6 +22,7 @@ import { FilterableMessageStack, FilterChip } from "./FilterableMessageStack";
 import { buildMessageList, type MessageFilters } from "./listUtils";
 import { default as JournalMessage } from "./Message";
 import { useAutoSelectedMessage } from "./useAutoSelectedMessage";
+import { saveOpenFeature } from "views/map/pending";
 
 const ALL_FILTERS: MessageFilters = {
   triage: "all",
@@ -131,6 +132,8 @@ function MessageMapView() {
     selection.select(id);
   };
   const leaveMessage = () => {
+    // An object drawn and not saved, which has its type, is saved rather than lost.
+    saveOpenFeature();
     if (pendingSelect) {
       setInProgress(false);
       setEditingId(undefined);
@@ -153,6 +156,8 @@ function MessageMapView() {
   const handleFinish = async () => {
     if (!selected) return;
 
+    // An object drawn and not saved, which has its type, is saved rather than lost.
+    saveOpenFeature();
     try {
       await acknowledge({ messageId: selected.id, divisionId: mapDivision.id });
       finishWork();

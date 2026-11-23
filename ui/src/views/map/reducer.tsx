@@ -28,6 +28,7 @@ export type LayersAction =
   | RemovePendingFeatureAction
   | AddRemovedFeatureAction
   | ClearRemovedFeatureAction
+  | ClearPendingFeaturesAction
   | SetDraftFeatureAction
   | ClearDraftFeatureAction
   | SetDrawLayer
@@ -85,6 +86,11 @@ export interface SetDraftFeatureAction {
 export interface ClearDraftFeatureAction {
   type: "CLEAR_DRAFT_FEATURE";
   payload: { id: string };
+}
+
+export interface ClearPendingFeaturesAction {
+  type: "CLEAR_PENDING_FEATURES";
+  payload: null;
 }
 
 export interface AddRemovedFeatureAction {
@@ -262,6 +268,8 @@ export const pendingFeaturesReducer = (state: PendingFeature[], action: LayersAc
       );
     case "REMOVE_PENDING_FEATURE":
       return state.filter((p) => p.id !== action.payload.id);
+    case "CLEAR_PENDING_FEATURES":
+      return state.length === 0 ? state : [];
     default:
       return state;
   }

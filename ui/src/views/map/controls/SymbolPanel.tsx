@@ -151,10 +151,14 @@ function Panel({
   // A point that has its symbol: show it, and the way to change it.
   if (hasSymbol && !changing) {
     const current = String(feature.properties?.icon);
+    // The same shape as the chooser's below, so the form is the same one in both: what was typed
+    // in it survives looking at the symbols and cancelling.
     return shell(
       <div className="flex flex-col gap-3">
-        <CurrentSymbol icon={current} onChange={() => setChanging(true)} />
-        {form}
+        <div className="flex flex-col gap-3">
+          <CurrentSymbol icon={current} onChange={() => setChanging(true)} />
+        </div>
+        <div>{form}</div>
       </div>,
     );
   }
@@ -163,119 +167,123 @@ function Panel({
 
   return shell(
     <div className="flex flex-col gap-3">
-      <div className="relative">
-        <span className="pointer-events-none absolute inset-y-0 left-0 flex w-8 items-center justify-center text-gray-400">
-          <FontAwesomeIcon icon={faMagnifyingGlass} />
-        </span>
-        <input
-          type="text"
-          inputMode="search"
-          enterKeyHint="search"
-          autoComplete="off"
-          role="combobox"
-          aria-label={t("mapview.iconPicker.search")}
-          aria-expanded={searching}
-          aria-controls={listId}
-          aria-activedescendant={
-            searching && hits[active] ? `${baseId}-option-${active}` : undefined
-          }
-          aria-autocomplete="list"
-          className="w-full rounded border border-gray-300 bg-white py-1 pr-7 pl-8 text-xs text-gray-900 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-          placeholder={t("mapview.iconPicker.placeholder")}
-          value={query}
-          // Not focused on open: on a touch screen that would raise the keyboard over the map.
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setActive(0);
-          }}
-          onKeyDown={onKeyDown}
-        />
-        {query !== "" && (
-          <button
-            type="button"
-            aria-label={t("mapview.iconPicker.clear")}
-            className="absolute inset-y-0 right-0 flex w-7 items-center justify-center text-gray-500 hover:text-gray-800"
-            onClick={clearSearch}
-          >
-            <FontAwesomeIcon icon={faXmark} />
-          </button>
-        )}
-      </div>
+      <div className="flex flex-col gap-3">
+        <div className="relative">
+          <span className="pointer-events-none absolute inset-y-0 left-0 flex w-8 items-center justify-center text-gray-400">
+            <FontAwesomeIcon icon={faMagnifyingGlass} />
+          </span>
+          <input
+            type="text"
+            inputMode="search"
+            enterKeyHint="search"
+            autoComplete="off"
+            role="combobox"
+            aria-label={t("mapview.iconPicker.search")}
+            aria-expanded={searching}
+            aria-controls={listId}
+            aria-activedescendant={
+              searching && hits[active] ? `${baseId}-option-${active}` : undefined
+            }
+            aria-autocomplete="list"
+            className="w-full rounded border border-gray-300 bg-white py-1 pr-7 pl-8 text-xs text-gray-900 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+            placeholder={t("mapview.iconPicker.placeholder")}
+            value={query}
+            // Not focused on open: on a touch screen that would raise the keyboard over the map.
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setActive(0);
+            }}
+            onKeyDown={onKeyDown}
+          />
+          {query !== "" && (
+            <button
+              type="button"
+              aria-label={t("mapview.iconPicker.clear")}
+              className="absolute inset-y-0 right-0 flex w-7 items-center justify-center text-gray-500 hover:text-gray-800"
+              onClick={clearSearch}
+            >
+              <FontAwesomeIcon icon={faXmark} />
+            </button>
+          )}
+        </div>
 
-      <p className="sr-only" aria-live="polite">
-        {searching
-          ? hits.length > 0
-            ? t("mapview.iconPicker.results", { count: hits.length })
-            : t("mapview.iconPicker.none", { query: query.trim() })
-          : ""}
-      </p>
+        <p className="sr-only" aria-live="polite">
+          {searching
+            ? hits.length > 0
+              ? t("mapview.iconPicker.results", { count: hits.length })
+              : t("mapview.iconPicker.none", { query: query.trim() })
+            : ""}
+        </p>
 
-      {searching ? (
-        <Results
-          id={listId}
-          baseId={baseId}
-          query={query.trim()}
-          hits={hits}
-          active={active}
-          onHover={setActive}
-          onPick={place}
-        />
-      ) : browse ? (
-        <CategoryBrowser
-          browse={browse}
-          hint={hint}
-          iconLabel={iconLabel}
-          onHint={setHint}
-          onBrowse={setBrowse}
-          onPick={place}
-        />
-      ) : (
-        <>
-          {recent.length > 0 && (
+        {searching ? (
+          <Results
+            id={listId}
+            baseId={baseId}
+            query={query.trim()}
+            hits={hits}
+            active={active}
+            onHover={setActive}
+            onPick={place}
+          />
+        ) : browse ? (
+          <CategoryBrowser
+            browse={browse}
+            hint={hint}
+            iconLabel={iconLabel}
+            onHint={setHint}
+            onBrowse={setBrowse}
+            onPick={place}
+          />
+        ) : (
+          <>
+            {recent.length > 0 && (
+              <section className="flex flex-col gap-1">
+                <h3 className="font-semibold text-gray-800">{t("mapview.iconPicker.recent")}</h3>
+                <div className="flex flex-wrap gap-1">
+                  {recent.map((id) => (
+                    <SymbolTile key={id} id={id} label={iconLabel(id)} onPick={place} />
+                  ))}
+                </div>
+              </section>
+            )}
             <section className="flex flex-col gap-1">
-              <h3 className="font-semibold text-gray-800">{t("mapview.iconPicker.recent")}</h3>
-              <div className="flex flex-wrap gap-1">
-                {recent.map((id) => (
-                  <SymbolTile key={id} id={id} label={iconLabel(id)} onPick={place} />
+              <h3 className="font-semibold text-gray-800">{t("mapview.iconPicker.categories")}</h3>
+              <div className="grid grid-cols-2 gap-1">
+                {CATEGORIES.map((category) => (
+                  <button
+                    key={category.number}
+                    type="button"
+                    className="flex min-h-[40px] items-center gap-2 rounded border border-gray-300 bg-white px-2 py-1 text-left text-[11px] leading-tight hover:bg-gray-100 focus-visible:outline-2 focus-visible:outline-primary"
+                    onClick={() => setBrowse({ category: category.number })}
+                  >
+                    <BabsIcon
+                      icon={CATEGORY_ICON[category.number]}
+                      size={28}
+                      title=""
+                      fallback={null}
+                      className="block shrink-0"
+                    />
+                    <CategoryName category={category} />
+                  </button>
                 ))}
               </div>
             </section>
-          )}
-          <section className="flex flex-col gap-1">
-            <h3 className="font-semibold text-gray-800">{t("mapview.iconPicker.categories")}</h3>
-            <div className="grid grid-cols-2 gap-1">
-              {CATEGORIES.map((category) => (
-                <button
-                  key={category.number}
-                  type="button"
-                  className="flex min-h-[40px] items-center gap-2 rounded border border-gray-300 bg-white px-2 py-1 text-left text-[11px] leading-tight hover:bg-gray-100 focus-visible:outline-2 focus-visible:outline-primary"
-                  onClick={() => setBrowse({ category: category.number })}
-                >
-                  <BabsIcon
-                    icon={CATEGORY_ICON[category.number]}
-                    size={28}
-                    title=""
-                    fallback={null}
-                    className="block shrink-0"
-                  />
-                  <CategoryName category={category} />
-                </button>
-              ))}
-            </div>
-          </section>
-          <p className="text-[11px] text-gray-600">{t("mapview.iconPicker.hint")}</p>
-        </>
-      )}
-      {hasSymbol && (
-        <Button variant="light" size="sm" onClick={() => setChanging(false)}>
-          {t("cancel")}
-        </Button>
-      )}
-      {!hasSymbol && onDiscard && (
-        <Button variant="light" size="sm" onClick={onDiscard}>
-          {t("mapview.pending.discard")}
-        </Button>
-      )}
+            <p className="text-[11px] text-gray-600">{t("mapview.iconPicker.hint")}</p>
+          </>
+        )}
+        {hasSymbol && (
+          <Button variant="light" size="sm" onClick={() => setChanging(false)}>
+            {t("cancel")}
+          </Button>
+        )}
+        {!hasSymbol && onDiscard && (
+          <Button variant="light" size="sm" onClick={onDiscard}>
+            {t("mapview.pending.discard")}
+          </Button>
+        )}
+      </div>
+      {/* Kept, not shown, while the symbols are looked at. */}
+      {hasSymbol && <div hidden>{form}</div>}
     </div>,
   );
 }

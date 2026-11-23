@@ -112,7 +112,10 @@ function TypePanel({
   const catalogueReady = useBabsIcons();
 
   const current = feature.properties?.[field] as string | undefined;
-  const hasType = Boolean(current && types[current]);
+  // A type this version does not list (an older one, say) is still a type: the form stays
+  // reachable, and the list is behind "Ändern".
+  const hasType = Boolean(current);
+  const known = current ? types[current] : undefined;
   const [changing, setChanging] = useState(!hasType);
 
   if (!catalogueReady) return null;
@@ -127,27 +130,29 @@ function TypePanel({
   };
 
   if (hasType && !changing) {
-    const type = types[current as string];
-
     return (
       <PanelShell testId="type-panel">
         <div className="flex flex-col gap-3">
-          <div className="flex items-center gap-3">
-            <BabsIcon
-              icon={type.thumbnail}
-              size={PICKER_ICON_SIZE}
-              title=""
-              fallback={null}
-              className="block shrink-0"
-            />
-            <span className="min-w-0 flex-1 text-sm font-semibold wrap-break-word">
-              {iconLabel(type.thumbnail)}
-            </span>
-            <Button variant="light" size="sm" onClick={() => setChanging(true)}>
-              {t("mapview.iconPicker.change")}
-            </Button>
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-3">
+              {known && (
+                <BabsIcon
+                  icon={known.thumbnail}
+                  size={PICKER_ICON_SIZE}
+                  title=""
+                  fallback={null}
+                  className="block shrink-0"
+                />
+              )}
+              <span className="min-w-0 flex-1 text-sm font-semibold wrap-break-word">
+                {known ? iconLabel(known.thumbnail) : current}
+              </span>
+              <Button variant="light" size="sm" onClick={() => setChanging(true)}>
+                {t("mapview.iconPicker.change")}
+              </Button>
+            </div>
           </div>
-          {form}
+          <div>{form}</div>
         </div>
       </PanelShell>
     );
@@ -156,40 +161,46 @@ function TypePanel({
   return (
     <PanelShell testId="type-panel">
       <div className="flex flex-col gap-3">
-        <ul className="flex flex-col gap-px">
-          {byColor(types).map((type) => (
-            <li key={type.name}>
-              <button
-                type="button"
-                aria-pressed={type.name === current}
-                className={clsx(
-                  "flex min-h-[40px] w-full items-center gap-2 rounded px-2 py-1 text-left text-xs",
-                  type.name === current ? "bg-primary/15 ring-1 ring-primary" : "hover:bg-gray-100",
-                )}
-                onClick={() => choose(type)}
-              >
-                <BabsIcon
-                  icon={type.thumbnail}
-                  size={PICKER_ICON_SIZE}
-                  title=""
-                  fallback={null}
-                  className="block shrink-0"
-                />
-                <span>{iconLabel(type.thumbnail)}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-        {hasType && (
-          <Button variant="light" size="sm" onClick={() => setChanging(false)}>
-            {t("cancel")}
-          </Button>
-        )}
-        {!hasType && onDiscard && (
-          <Button variant="light" size="sm" onClick={onDiscard}>
-            {t("mapview.pending.discard")}
-          </Button>
-        )}
+        <div className="flex flex-col gap-3">
+          <ul className="flex flex-col gap-px">
+            {byColor(types).map((type) => (
+              <li key={type.name}>
+                <button
+                  type="button"
+                  aria-pressed={type.name === current}
+                  className={clsx(
+                    "flex min-h-[40px] w-full items-center gap-2 rounded px-2 py-1 text-left text-xs",
+                    type.name === current
+                      ? "bg-primary/15 ring-1 ring-primary"
+                      : "hover:bg-gray-100",
+                  )}
+                  onClick={() => choose(type)}
+                >
+                  <BabsIcon
+                    icon={type.thumbnail}
+                    size={PICKER_ICON_SIZE}
+                    title=""
+                    fallback={null}
+                    className="block shrink-0"
+                  />
+                  <span>{iconLabel(type.thumbnail)}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+          {hasType && (
+            <Button variant="light" size="sm" onClick={() => setChanging(false)}>
+              {t("cancel")}
+            </Button>
+          )}
+          {!hasType && onDiscard && (
+            <Button variant="light" size="sm" onClick={onDiscard}>
+              {t("mapview.pending.discard")}
+            </Button>
+          )}
+        </div>
+        {/* Kept, not shown, while the types are looked at. */}
+        {hasType && <div hidden>{form}</div>}
       </div>
     </PanelShell>
   );

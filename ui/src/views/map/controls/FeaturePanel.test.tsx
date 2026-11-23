@@ -136,13 +136,27 @@ describe("FeaturePanel", () => {
       const name = Object.keys(LineTypes)[2];
       render(<FeaturePanel selectedFeature={line({ lineType: name })} onUpdate={onUpdate} />);
 
-      expect(screen.getByTestId("form")).toBeInTheDocument();
+      expect(screen.getByTestId("form")).toBeVisible();
       fireEvent.click(screen.getByRole("button", { name: "Ändern" }));
-      expect(screen.queryByTestId("form")).not.toBeInTheDocument();
+      // kept, so what was typed survives looking at the types, but out of sight
+      expect(screen.getByTestId("form")).not.toBeVisible();
       expect(screen.getByRole("button", { pressed: true })).toBeInTheDocument();
 
       fireEvent.click(screen.getByRole("button", { name: "Abbrechen" }));
-      expect(screen.getByTestId("form")).toBeInTheDocument();
+      expect(screen.getByTestId("form")).toBeVisible();
+    });
+
+    it("still offers the form for a saved line whose type this version does not list", () => {
+      render(
+        <FeaturePanel selectedFeature={line({ lineType: "Aelterer Typ" })} onUpdate={onUpdate} />,
+      );
+
+      expect(screen.getByTestId("form")).toBeVisible();
+      expect(screen.getByText("Aelterer Typ")).toBeInTheDocument();
+      // the list is behind "Ändern", and choosing from it replaces the old type
+      fireEvent.click(screen.getByRole("button", { name: "Ändern" }));
+      fireEvent.click(screen.getAllByRole("button", { pressed: false })[0]);
+      expect(onUpdate.mock.calls[0][0].features[0].properties.lineType).not.toBe("Aelterer Typ");
     });
 
     it("can drop a pending line before a type is chosen", () => {
