@@ -1,4 +1,5 @@
 import type { FeatureCollection } from "geojson";
+import { useSyncExternalStore } from "react";
 import { layerToFeatureCollection } from "api";
 import type { Layer } from "types/layer";
 import type { DraftFeature, PendingFeature } from "./LayerContext";
@@ -86,7 +87,34 @@ const createdForMessage = new Set<string>();
 
 export const markCreatedForMessage = (id: string): void => {
   createdForMessage.add(id);
+  createdHere = new Set([...createdHere, id]);
+  createdHereListeners.forEach((listener) => listener());
 };
 
 /** True, once, for a feature that was created in this session for a message. */
 export const consumeCreatedForMessage = (id: string): boolean => createdForMessage.delete(id);
+
+/**
+ * Features this session created for a message, as a set that changes identity whenever one is
+ * added. The map marks them as the message's work at once, before the history says so.
+ */
+let createdHere: ReadonlySet<string> = new Set();
+const createdHereListeners = new Set<() => void>();
+
+const subscribeToCreatedHere = (listener: () => void) => {
+  createdHereListeners.add(listener);
+
+  return () => {
+    createdHereListeners.delete(listener);
+  };
+};
+
+export const useCreatedForMessage = (): ReadonlySet<string> =>
+  useSyncExternalStore(subscribeToCreatedHere, () => createdHere);
+
+/** Forgets the features created for a message, e.g. when another message is taken up. */
+export const clearCreatedForMessage = (): void => {
+  createdForMessage.clear();
+  createdHere = new Set();
+  createdHereListeners.forEach((listener) => listener());
+};

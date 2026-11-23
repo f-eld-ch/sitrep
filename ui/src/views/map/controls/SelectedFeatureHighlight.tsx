@@ -1,6 +1,7 @@
 import { useContext } from "react";
 import { Layer as MapLayer, Source } from "react-map-gl/maplibre";
 import { layerToFeatureCollection } from "api";
+import { outlineGeometry } from "components/map/enrichment/enrichFeature";
 import { LayerContext } from "../LayerContext";
 import { LINE_WIDTH, POINT_RADIUS } from "./haloStyle";
 
@@ -23,7 +24,14 @@ export function SelectedFeatureHighlight({ featureId }: { featureId: string | un
   if (feature === undefined) return null;
 
   return (
-    <Source id={SOURCE_ID} type="geojson" data={{ type: "FeatureCollection", features: [feature] }}>
+    <Source
+      id={SOURCE_ID}
+      type="geojson"
+      data={{
+        type: "FeatureCollection",
+        features: [{ ...feature, geometry: outlineGeometry(feature) }],
+      }}
+    >
       <MapLayer
         id={`${SOURCE_ID}-fill`}
         type="fill"

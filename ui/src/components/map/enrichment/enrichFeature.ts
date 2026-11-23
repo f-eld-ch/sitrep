@@ -1,6 +1,6 @@
 import bearing from "@turf/bearing";
 import { point } from "@turf/helpers";
-import type { Feature, Position } from "geojson";
+import type { Feature, Geometry, Position } from "geojson";
 import { buildFlowArrow } from "./flowArrow";
 import { smoothRing } from "./smooth";
 import { EnrichLineStringMap, EnrichPolygonMap } from "./registry";
@@ -184,3 +184,11 @@ export const selectionFill = (f: Feature): SyntheticFeature | undefined => {
 
   return undefined;
 };
+
+/**
+ * The geometry a highlight (a halo, a selection ring) is drawn around: for a zone drawn as a
+ * curve the curve, otherwise what was drawn. A ring around the straight edges would not follow
+ * the outline that is on the map.
+ */
+export const outlineGeometry = <G extends Geometry>(f: Feature<G>): Geometry =>
+  selectionFill(f as Feature)?.geometry ?? f.geometry;

@@ -6,6 +6,7 @@ import type { Layer } from "types/layer";
 import { LayerContext, type LayerState, type RemovedFeature } from "../LayerContext";
 import { MapSelectionContext } from "../MapSelectionContext";
 import { MapTimeContext } from "../MapTimeContext";
+import { clearCreatedForMessage, markCreatedForMessage } from "../pending";
 import { MessageHighlight, MessageHighlightToggle } from "./MessageHighlight";
 
 vi.mock("react-i18next", () => ({
@@ -152,6 +153,7 @@ beforeEach(() => {
   dispatch.mockReset();
   onDrawingChange.mockReset();
   renderRemoved.mockClear();
+  clearCreatedForMessage();
 });
 
 describe("MessageHighlight halos", () => {
@@ -167,6 +169,62 @@ describe("MessageHighlight halos", () => {
       ["added", "added"],
       ["kept", "modified"],
     ]);
+  });
+
+  it("marks what is being drawn for the message from the moment it is drawn", () => {
+    setup({
+      layerState: state({
+        pendingFeatures: [
+          { id: "drawn", layerId: "map-layer", geometry: point, properties: { icon: "x" } },
+          { id: "elsewhere", layerId: "other-layer", geometry: point, properties: {} },
+        ],
+      }),
+    });
+
+    expect(sourceFeatures().map((f) => [f.id, f.properties.halo])).toEqual([["drawn", "added"]]);
+  });
+
+  it("draws the halo of a zone drawn as a curve around the curve, not the straight edges", () => {
+    const square = [
+      [8, 47],
+      [8.1, 47],
+      [8.1, 47.1],
+      [8, 47.1],
+      [8, 47],
+    ];
+    mocks.halos.current = new Map([["flood", halo("added")]]);
+    setup({
+      layerState: state({
+        layers: [
+          {
+            layer: {
+              id: "map-layer",
+              kind: "MESSAGE_MAP",
+              features: [
+                {
+                  id: "flood",
+                  geometry: { type: "Polygon", coordinates: [square] },
+                  properties: { zoneType: "UeberschwemmtesGebiet" },
+                },
+              ],
+            } as unknown as Layer,
+            isVisible: true,
+          },
+        ],
+      }),
+    });
+
+    const [flood] = JSON.parse(
+      screen.getByTestId("source-message-highlight").dataset.features ?? "{}",
+    ).features as { geometry: { coordinates: number[][][] } }[];
+    expect(flood.geometry.coordinates[0].length).toBeGreaterThan(square.length * 5);
+  });
+
+  it("marks a feature created a moment ago before the history lists it", () => {
+    markCreatedForMessage("kept");
+    setup();
+
+    expect(sourceFeatures().map((f) => [f.id, f.properties.halo])).toEqual([["kept", "added"]]);
   });
 
   it("marks removed features where they last were, and draws them again as they looked", () => {
