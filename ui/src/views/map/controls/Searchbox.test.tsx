@@ -7,7 +7,23 @@ const mocks = vi.hoisted(() => ({
   map: { current: undefined as unknown },
 }));
 
-vi.mock("react-map-gl/maplibre", () => ({ useMap: () => ({ current: mocks.map.current }) }));
+vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
+vi.mock("react-map-gl/maplibre", () => ({
+  useMap: () => ({ current: mocks.map.current }),
+  Marker: ({
+    longitude,
+    latitude,
+    children,
+  }: {
+    longitude: number;
+    latitude: number;
+    children: React.ReactNode;
+  }) => (
+    <div data-testid="marker" data-lng={longitude} data-lat={latitude}>
+      {children}
+    </div>
+  ),
+}));
 
 const fetchMock = vi.fn();
 
@@ -107,6 +123,95 @@ describe("Searchbox", () => {
     });
     expect(screen.queryByText("Bernex (GE)")).not.toBeInTheDocument();
     expect(input()).toHaveValue("");
+  });
+
+  it("puts a marker where the map was taken, named after the place, until it is clicked", async () => {
+    fetchMock.mockResolvedValue({
+      json: () =>
+        Promise.resolve({ features: [geoAdminResult(2, "<b>Bernex</b> (GE)", 6.07, 46.17)] }),
+    });
+    render(<SearchControl />);
+    expect(screen.queryByTestId("marker")).not.toBeInTheDocument();
+
+    type("Bern");
+    await settle();
+    // nothing yet: only a result that was chosen takes the map somewhere
+    expect(screen.queryByTestId("marker")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByText("Bernex"));
+    const marker = screen.getByTestId("marker");
+    expect(marker).toHaveAttribute("data-lng", "6.07");
+    expect(marker).toHaveAttribute("data-lat", "46.17");
+    expect(screen.getByTitle("Bernex (GE)")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "close" }));
+    expect(screen.queryByTestId("marker")).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ["markup", "<b>Bern</b> (BE) <i>Kanton</i>", "Bern (BE) Kanton"],
+    ["entities", "Bern &amp; Umgebung", "Bern & Umgebung"],
+    [
+      "broken, nested tags",
+      "Bern <scr<script>ipt>alert(1)</scr</script>ipt>",
+      "Bern ipt>alert(1)ipt>",
+    ],
+    ["a script", "Bern<script>alert(1)</script>", "Bernalert(1)"],
+    ["an attribute that runs code", '<img src=x onerror="alert(1)">Bern', "Bern"],
+  ])("names the pin after the place as text, with %s in the label", async (_name, label, title) => {
+    fetchMock.mockResolvedValue({
+      json: () => Promise.resolve({ features: [geoAdminResult(2, label, 6.07, 46.17)] }),
+    });
+    render(<SearchControl />);
+    type("Bern");
+    await settle();
+
+    // choose the (only) result; its label is rendered by the list
+    fireEvent.click(document.querySelector("a")!);
+
+    const pin = screen.getByTestId("marker").querySelector("button")!;
+    expect(pin.getAttribute("title")).toBe(title);
+    // nothing in the label has become part of the page
+    expect(document.querySelector("script")).toBeNull();
+    expect(document.querySelector("img[onerror]")).toBeNull();
+  });
+
+  it("moves the marker to the next place that is chosen", async () => {
+    fetchMock
+      .mockResolvedValueOnce({
+        json: () => Promise.resolve({ features: [geoAdminResult(1, "Bern (BE)", 7.44, 46.95)] }),
+      })
+      .mockResolvedValueOnce({
+        json: () => Promise.resolve({ features: [geoAdminResult(2, "Basel (BS)", 7.59, 47.56)] }),
+      });
+    render(<SearchControl />);
+
+    type("Bern");
+    await settle();
+    fireEvent.click(screen.getByText("Bern (BE)"));
+    type("Basel");
+    await settle();
+    fireEvent.click(screen.getByText("Basel (BS)"));
+
+    expect(screen.getAllByTestId("marker")).toHaveLength(1);
+    expect(screen.getByTestId("marker")).toHaveAttribute("data-lng", "7.59");
+  });
+
+  it("does not search again after a result was chosen, for what had been typed before", async () => {
+    fetchMock.mockResolvedValue({
+      json: () => Promise.resolve({ features: [geoAdminResult(2, "Bernex (GE)", 6.07, 46.17)] }),
+    });
+    render(<SearchControl />);
+    type("Bern");
+    fireEvent.keyDown(input(), { key: "Enter" });
+    await act(() => vi.advanceTimersByTimeAsync(0));
+    fireEvent.click(screen.getByText("Bernex (GE)"));
+
+    await settle();
+
+    // once for Enter, and not again for the typing that was still waiting
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText("Bernex (GE)")).not.toBeInTheDocument();
   });
 
   it("shows no results when the search service fails or answers nonsense", async () => {
