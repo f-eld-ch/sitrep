@@ -30,7 +30,7 @@ const mocks = vi.hoisted(() => ({
   fireDrawEvent: vi.fn(),
   pending: undefined as unknown,
   popup: { current: undefined as Record<string, unknown> | undefined },
-  fakeMap: { getMap: () => ({ id: "inner-map" }) },
+  fakeMap: { getMap: () => ({ id: "inner-map" }), getBearing: () => 30 },
 }));
 
 vi.mock("react-i18next", () => ({
@@ -521,7 +521,30 @@ describe("BabsIconController", () => {
       features: [feature],
       action: "featureDetail",
       effectiveAt,
+      draft: false,
       target: mocks.fakeMap,
     });
+  });
+
+  it("keeps a change made in the unified panel as a draft, and sends it when saved", () => {
+    mocks.iconPickerV2 = true;
+    renderController({ properties: { icon: "babsBeschaedigung" } });
+    mocks.fireDrawEvent.mockClear();
+
+    // the rotation lock is a change; it is not sent yet
+    fireEvent.click(screen.getByRole("button", { name: "Signatur fixieren" }));
+    expect(mocks.fireDrawEvent).toHaveBeenCalledWith(
+      { id: "inner-map" },
+      "draw.update",
+      expect.objectContaining({ draft: true }),
+    );
+
+    // the save button is
+    fireEvent.click(screen.getByRole("button", { name: "speichern" }));
+    expect(mocks.fireDrawEvent).toHaveBeenLastCalledWith(
+      { id: "inner-map" },
+      "draw.update",
+      expect.objectContaining({ draft: false }),
+    );
   });
 });

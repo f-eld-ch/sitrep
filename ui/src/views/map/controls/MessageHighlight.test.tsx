@@ -81,6 +81,7 @@ function state(overrides: Partial<LayerState> = {}): LayerState {
     layers: [{ layer: layer([{ id: "added" }, { id: "kept" }]), isVisible: true }],
     pendingFeatures: [],
     removedFeatures: [],
+    draftFeatures: [],
     activeLayer: "map-layer",
     selectedFeature: undefined,
     draw: undefined,

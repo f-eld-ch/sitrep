@@ -72,6 +72,8 @@ export interface FeatureFormProps {
     action: string;
     /** When the change takes effect on the timeline; absent for "now". */
     effectiveAt?: Date;
+    /** The user pressed save: everything drafted so far is sent now. */
+    save?: boolean;
   }) => void;
   /** Set on a saved feature of the free map: the form then offers the time the change takes effect. */
   changeTime?: { earliest?: Date };
@@ -205,6 +207,7 @@ export function FeatureForm({ selectedFeature, onUpdate, pending, changeTime }: 
     onUpdate({
       features: [{ ...selectedFeature, properties: buildProperties() }],
       action: "featureDetail",
+      save: true,
       effectiveAt:
         changeTime && effectiveTouched && !Number.isNaN(picked.getTime()) ? picked : undefined,
     });

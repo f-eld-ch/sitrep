@@ -35,6 +35,7 @@ const layerState = (pendingIds: string[]): LayerState => ({
     properties: { icon: "x" },
   })),
   removedFeatures: [],
+  draftFeatures: [],
   activeLayer: undefined,
   selectedFeature: undefined,
   draw: undefined,

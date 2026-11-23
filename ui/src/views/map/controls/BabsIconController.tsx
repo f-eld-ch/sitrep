@@ -414,8 +414,8 @@ const BabsIconController = () => {
 
   // Saved features plus the ones drawn on the free map that have not been saved yet.
   const featureCollection = useMemo(
-    () => withPendingFeatures(layer, state.pendingFeatures),
-    [layer, state.pendingFeatures],
+    () => withPendingFeatures(layer, state.pendingFeatures, state.draftFeatures),
+    [layer, state.pendingFeatures, state.draftFeatures],
   );
   const selectedFeature = useMemo(
     () => first(featureCollection.features.filter((f) => f.id === state.selectedFeature)),
@@ -436,6 +436,8 @@ const BabsIconController = () => {
       features: Feature<Geometry, GeoJsonProperties>[];
       action?: string;
       effectiveAt?: Date;
+      /** The user pressed save: send what is drafted. */
+      save?: boolean;
     }) => {
       const updatedFeatures: Feature[] = e.features;
       // Route the edit back through the draw control's own update path, so feature
@@ -444,10 +446,13 @@ const BabsIconController = () => {
         features: updatedFeatures,
         action: e.action,
         effectiveAt: e.effectiveAt,
+        // With the unified panel every change is kept locally until the user saves; the older
+        // pickers have no save, so they send as they always did.
+        draft: iconPickerV2 && !e.save,
         target: map,
       });
     },
-    [map],
+    [iconPickerV2, map],
   );
 
   return (

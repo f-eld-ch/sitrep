@@ -30,6 +30,7 @@ const state = {
   layers: [],
   pendingFeatures: [],
   removedFeatures: [],
+  draftFeatures: [],
   activeLayer: undefined,
   selectedFeature: undefined,
   draw: undefined,

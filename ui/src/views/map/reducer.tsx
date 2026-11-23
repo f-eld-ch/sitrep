@@ -7,6 +7,7 @@ import type {
   DrawState,
   LayersState,
   PendingFeature,
+  DraftFeature,
   RemovedFeature,
   SelectedFeatureState,
   WMSLayer,
@@ -27,6 +28,8 @@ export type LayersAction =
   | RemovePendingFeatureAction
   | AddRemovedFeatureAction
   | ClearRemovedFeatureAction
+  | SetDraftFeatureAction
+  | ClearDraftFeatureAction
   | SetDrawLayer
   | AddWMSLayerAction
   | UpdateWMSLayerOpacityAction
@@ -70,6 +73,17 @@ export interface UpdatePendingFeatureAction {
 
 export interface RemovePendingFeatureAction {
   type: "REMOVE_PENDING_FEATURE";
+  payload: { id: string };
+}
+
+export interface SetDraftFeatureAction {
+  type: "SET_DRAFT_FEATURE";
+  /** Only the given parts change: an edit of the geometry leaves the properties alone, and vice versa. */
+  payload: { id: string; geometry?: Geometry; properties?: GeoJsonProperties };
+}
+
+export interface ClearDraftFeatureAction {
+  type: "CLEAR_DRAFT_FEATURE";
   payload: { id: string };
 }
 
@@ -248,6 +262,38 @@ export const pendingFeaturesReducer = (state: PendingFeature[], action: LayersAc
       );
     case "REMOVE_PENDING_FEATURE":
       return state.filter((p) => p.id !== action.payload.id);
+    default:
+      return state;
+  }
+};
+
+/**
+ * Changes to a saved feature that have not been sent yet. The map shows them at once; they are
+ * sent when the user saves and dropped when the selection moves on.
+ */
+export const draftFeaturesReducer = (state: DraftFeature[], action: LayersAction) => {
+  switch (action.type) {
+    case "SET_DRAFT_FEATURE": {
+      const { id, geometry, properties } = action.payload;
+      const existing = state.find((d) => d.id === id);
+      const next: DraftFeature = {
+        id,
+        geometry: geometry ?? existing?.geometry,
+        properties: properties ?? existing?.properties,
+      };
+
+      return [...state.filter((d) => d.id !== id), next];
+    }
+    case "CLEAR_DRAFT_FEATURE":
+      return state.some((d) => d.id === action.payload.id)
+        ? state.filter((d) => d.id !== action.payload.id)
+        : state;
+    case "DESELECT_FEATURE":
+      return state.length === 0 ? state : [];
+    case "SELECT_FEATURE": {
+      const kept = state.filter((d) => d.id === action.payload.id);
+      return kept.length === state.length ? state : kept;
+    }
     default:
       return state;
   }

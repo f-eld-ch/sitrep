@@ -173,6 +173,7 @@ describe("FeatureLabelPopup fields", () => {
         { ...point({}), properties: { icon: aliasFor("4101"), nameLeft: "L", name: "Bern" } },
       ],
       action: "featureDetail",
+      save: true,
       effectiveAt: undefined,
     });
     expect(dispatch).toHaveBeenCalledWith({ type: "DESELECT_FEATURE", payload: null });

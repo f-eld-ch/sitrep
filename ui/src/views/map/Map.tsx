@@ -615,8 +615,8 @@ function ActiveLayer() {
   const isOwnLayer = activeLayer?.sourceIncidentId === incidentId;
   const drawingAllowed = useDrawingAllowed();
   const featureCollection = useMemo(
-    () => withPendingFeatures(activeLayer, state.pendingFeatures),
-    [activeLayer, state.pendingFeatures],
+    () => withPendingFeatures(activeLayer, state.pendingFeatures, state.draftFeatures),
+    [activeLayer, state.pendingFeatures, state.draftFeatures],
   );
 
   // Enrichment follows the geometry under the cursor, not the last saved one, so the flow
@@ -789,11 +789,15 @@ function Draw() {
 
   const onUpdate = useCallback(
     (e: FeatureEvent) => {
-      const isPropertyOnly = e.action === "featureDetail";
+      const isGeometryDraft = (id: string) =>
+        state.draftFeatures.some((d) => d.id === id && d.geometry);
       const isGeometryOnly = e.action === "reverseDirection";
       const updatedFeatures: Feature[] = e.features;
       for (const f of updatedFeatures) {
         const feature = cleanFeature(f);
+        const id = String(feature.id ?? "");
+        // A saved feature with a drafted geometry (a reversed line) sends it along with the rest.
+        const isPropertyOnly = e.action === "featureDetail" && !isGeometryDraft(id);
 
         // Not saved yet: the edit only changes the local copy.
         if (isPendingFeature(state.pendingFeatures, feature.id?.toString())) {
@@ -809,7 +813,23 @@ function Draw() {
           continue;
         }
 
+        // Edited in the panel: kept as a draft until the user saves.
+        if (e.draft) {
+          dispatch({
+            type: "SET_DRAFT_FEATURE",
+            payload: {
+              id,
+              geometry: e.action === "featureDetail" ? undefined : feature.geometry,
+              properties: isGeometryOnly ? undefined : feature.properties,
+            },
+          });
+
+          continue;
+        }
+
         if (drawingMessage) onDrawingChange?.();
+        // What is sent now is the draft; the cache shows it at once through the optimistic response.
+        dispatch({ type: "CLEAR_DRAFT_FEATURE", payload: { id } });
 
         void modifyFeature({
           id: String(feature.id ?? ""),
@@ -831,6 +851,7 @@ function Draw() {
       incidentId,
       modifyFeature,
       onDrawingChange,
+      state.draftFeatures,
       state.pendingFeatures,
     ],
   );
@@ -905,6 +926,7 @@ function Draw() {
       const featureCollection: FeatureCollection = withPendingFeatures(
         state.layers.find((l) => l.layer.id === state.activeLayer)?.layer,
         state.pendingFeatures,
+        state.draftFeatures,
       );
 
       safeDrawInvoke(state.draw, (d) => {
@@ -926,6 +948,7 @@ function Draw() {
     state.activeLayer,
     state.selectedFeature,
     state.pendingFeatures,
+    state.draftFeatures,
   ]);
 
   // this is the effect which syncs the drawings
@@ -1108,6 +1131,11 @@ export interface FeatureEvent {
   features: Feature<Geometry, GeoJsonProperties>[];
   /** "featureDetail" = property-only change; "reverseDirection" = geometry-only change; absent or other = geometry+properties change */
   action?: string;
+  /**
+   * A change to a saved feature made in the feature panel: kept locally and shown, and sent when
+   * the user saves (an event without this flag).
+   */
+  draft?: boolean;
   /** When a property edit takes effect on the timeline; absent for "now" (or the message's time). */
   effectiveAt?: Date;
 }
