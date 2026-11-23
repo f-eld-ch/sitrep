@@ -3,6 +3,7 @@
 ### 🐛 Bug Fixes
 
 - *(map)* Translate the message map layer in the layer card of read-only maps ([#2146](https://github.com/f-eld-ch/sitrep/issues/2146)) - ([6ffa6d8](https://github.com/f-eld-ch/sitrep/commit/6ffa6d87db71e0b6d7db60c9e5e601f5006be9e4))
+- *(service)* Don't flag expected conflicts and domain errors as trace errors ([#2159](https://github.com/f-eld-ch/sitrep/issues/2159)) - ([106bdb1](https://github.com/f-eld-ch/sitrep/commit/106bdb119476b685e1065a4474d836c3230c861e))
 - *(ui)* Compute the pie slices without reassigning during render ([#2145](https://github.com/f-eld-ch/sitrep/issues/2145)) - ([75071d9](https://github.com/f-eld-ch/sitrep/commit/75071d9d47eba3455b7a52951f73866fb437b96e))
 
 ### 📚 Documentation
@@ -12,11 +13,13 @@
 
 ### 🧪 Testing
 
+- *(postgres)* Run PostgreSQL integration tests with testcontainers ([#2160](https://github.com/f-eld-ch/sitrep/issues/2160)) - ([dc70510](https://github.com/f-eld-ch/sitrep/commit/dc70510663f1e8960b8a33e89b6498d4612df899))
 - *(ui)* Improve the UI test harness and fix the bugs it found ([#2150](https://github.com/f-eld-ch/sitrep/issues/2150)) - ([2a96a5c](https://github.com/f-eld-ch/sitrep/commit/2a96a5cce1ff29185f73604dbfa8c73dba0bfd9d))
 - Raise the Go test coverage and fix the bugs it found ([#2149](https://github.com/f-eld-ch/sitrep/issues/2149)) - ([eed9fdf](https://github.com/f-eld-ch/sitrep/commit/eed9fdf60766dd8c0500749788898c688220b2d6))
 
 ### ⚙️  Other
 
+- *(deps)* Bump react-i18next from 18.0.2 to 18.0.3 in /ui ([#2154](https://github.com/f-eld-ch/sitrep/issues/2154)) - ([3d19e14](https://github.com/f-eld-ch/sitrep/commit/3d19e14787107716daa53900fef3c453e56882e9))
 - *(deps)* Bump react-dropzone from 20.2.0 to 20.2.1 in /ui ([#2155](https://github.com/f-eld-ch/sitrep/issues/2155)) - ([131d0f8](https://github.com/f-eld-ch/sitrep/commit/131d0f8a8492a40914d1c65ee605f09160626107))
 - *(deps)* Bump i18next from 27.1.5 to 27.2.2 in /ui ([#2157](https://github.com/f-eld-ch/sitrep/issues/2157)) - ([8f13e07](https://github.com/f-eld-ch/sitrep/commit/8f13e079343c95d638782751013aa44f2f048e97))
 - *(go)* Run the tests under the race detector ([#2151](https://github.com/f-eld-ch/sitrep/issues/2151)) - ([2f764e0](https://github.com/f-eld-ch/sitrep/commit/2f764e07baae5d1b28c5b6db5dd1ec82b0433976))
