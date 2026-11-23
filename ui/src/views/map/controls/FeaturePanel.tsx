@@ -133,7 +133,7 @@ function TypePanel({
               fallback={null}
               className="block shrink-0"
             />
-            <span className="min-w-0 flex-1 truncate text-sm font-semibold">
+            <span className="min-w-0 flex-1 text-sm font-semibold wrap-break-word">
               {iconLabel(type.thumbnail)}
             </span>
             <Button variant="light" size="sm" onClick={() => setChanging(true)}>

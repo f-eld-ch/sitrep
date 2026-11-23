@@ -303,7 +303,7 @@ function CurrentSymbol({ icon, onChange }: { icon: string; onChange: () => void 
           className="block shrink-0"
         />
       )}
-      <span className="min-w-0 flex-1 truncate text-sm font-semibold">
+      <span className="min-w-0 flex-1 text-sm font-semibold wrap-break-word">
         {id ? iconLabel(id) : ""}
       </span>
       <Button variant="light" size="sm" onClick={onChange}>
@@ -387,7 +387,7 @@ function Results({
               <span className="text-xs">
                 <Highlighted text={hit.label} ranges={hit.labelMatch} />
               </span>
-              <span className="truncate text-[11px] text-gray-600">
+              <span className="text-[11px] wrap-break-word text-gray-600">
                 <Highlighted text={hit.path} ranges={hit.pathMatch} />
               </span>
             </span>

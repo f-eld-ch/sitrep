@@ -162,3 +162,24 @@ describe("FeaturePanel", () => {
     expect(onUpdate.mock.calls[0][0].features[0].properties.zoneType).toBeDefined();
   });
 });
+
+describe("long names", () => {
+  it("wrap instead of being cut off with an ellipsis", () => {
+    // "Beabsichtigter Einsatz" and its like do not fit one line of the panel
+    const name =
+      Object.keys(LineTypes).find((n) => /Einsatz/i.test(n)) ?? Object.keys(LineTypes)[0];
+    render(<FeaturePanel selectedFeature={line({ lineType: name })} onUpdate={onUpdate} />);
+
+    const title = screen.getByText(/./, { selector: "span.text-sm" });
+    expect(title.className).not.toMatch(/truncate|text-ellipsis|overflow-hidden/);
+    expect(title.className).toMatch(/wrap-break-word/);
+  });
+
+  it("wrap in the symbol header too", () => {
+    render(<FeaturePanel selectedFeature={point({ icon: "4103" })} onUpdate={onUpdate} />);
+
+    const title = screen.getByText("Zug-P");
+    expect(title.className).not.toMatch(/truncate|text-ellipsis|overflow-hidden/);
+    expect(title.className).toMatch(/wrap-break-word/);
+  });
+});
