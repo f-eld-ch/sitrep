@@ -156,6 +156,7 @@
   "map": "Lagebild",
   "mapview": {
     "rotate": "Richtung drehen",
+    "arrowPosition": "Pfeilposition entlang der Linie",
     "flowEdge": "Fliessrichtung an einer anderen Kante",
     "flowEdgePrev": "Vorherige Kante",
     "flowEdgeNext": "Nächste Kante",

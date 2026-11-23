@@ -599,3 +599,35 @@ describe("FeatureLabelPopup moving the flow arrow of a flooded area", () => {
     expect(screen.queryByRole("button", { name: "Nächste Kante" })).not.toBeInTheDocument();
   });
 });
+
+describe("FeatureLabelPopup moving the slide arrow", () => {
+  const slide = (arrowAt?: number): F =>
+    line({ lineType: "Rutschgebiet", ...(arrowAt === undefined ? {} : { arrowAt }) });
+
+  it("offers a slider at the middle for a line with a slide arrow", () => {
+    renderPopup(slide());
+
+    expect(screen.getByLabelText(/Pfeilposition/)).toHaveValue("50");
+  });
+
+  it("stores where the arrow is as a fraction, and nothing for the middle", () => {
+    renderPopup(slide());
+
+    fireEvent.change(screen.getByLabelText(/Pfeilposition/), { target: { value: "25" } });
+    expect(onUpdate.mock.calls[0][0].action).toBe("featureDetail");
+    expect(onUpdate.mock.calls[0][0].features[0].properties).toMatchObject({ arrowAt: 0.25 });
+
+    fireEvent.change(screen.getByLabelText(/Pfeilposition/), { target: { value: "50" } });
+    expect(onUpdate.mock.calls[1][0].features[0].properties).not.toHaveProperty("arrowAt");
+  });
+
+  it("shows the stored position", () => {
+    renderPopup(slide(0.8));
+    expect(screen.getByLabelText(/Pfeilposition/)).toHaveValue("80");
+  });
+
+  it("offers it for no other line", () => {
+    renderPopup(line({ lineType: "Frontline" }));
+    expect(screen.queryByLabelText(/Pfeilposition/)).not.toBeInTheDocument();
+  });
+});

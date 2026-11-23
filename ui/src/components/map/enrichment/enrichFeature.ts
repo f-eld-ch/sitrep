@@ -77,7 +77,15 @@ export const enrichFeature = (f: SyntheticFeature): SyntheticFeature[] => {
       );
     }
     if (enrich?.slideArrow) {
-      features.push(...buildSlideArrow(f.id, coordinates, enrich.slideArrow, f.properties?.color));
+      features.push(
+        ...buildSlideArrow(
+          f.id,
+          coordinates,
+          enrich.slideArrow,
+          f.properties?.color,
+          typeof f.properties?.arrowAt === "number" ? f.properties.arrowAt : undefined,
+        ),
+      );
     }
   }
 

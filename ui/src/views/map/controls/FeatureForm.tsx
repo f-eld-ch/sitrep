@@ -11,7 +11,12 @@ import { categoryOf, resolveIconId } from "components/babs/iconResolver";
 import { fieldsFor, type LabelField, rotationAllowed } from "components/babs/labelSchema";
 import { LineTypes, ZoneTypes } from "components/babs/lineAndZoneTypes";
 import { rotateRing } from "components/map/enrichment/flowArrow";
-import { EnrichPolygonMap } from "components/map/enrichment/registry";
+import {
+  SLIDE_ARROW_DEFAULT_AT,
+  SLIDE_ARROW_MAX_AT,
+  SLIDE_ARROW_MIN_AT,
+} from "components/map/enrichment/slideArrow";
+import { EnrichLineStringMap, EnrichPolygonMap } from "components/map/enrichment/registry";
 import type { Feature, GeoJsonProperties, Geometry } from "geojson";
 import dayjs from "dayjs";
 import { isEqual, isUndefined, omitBy } from "lodash";
@@ -142,6 +147,12 @@ export function FeatureForm({ selectedFeature, onUpdate, pending, changeTime }: 
     canRotate && !isUndefined(selectedFeature?.properties?.iconRotation),
   );
 
+  const arrowAtOf = (): number =>
+    typeof selectedFeature.properties?.arrowAt === "number"
+      ? selectedFeature.properties.arrowAt
+      : SLIDE_ARROW_DEFAULT_AT;
+  const [arrowAt, setArrowAt] = useState<number>(arrowAtOf);
+
   const [syncedFeature, setSyncedFeature] = useState(selectedFeature);
   // By content, not identity: the feature object is rebuilt whenever the map re-renders, and
   // that must not wipe what the user is typing. Only a real change to the feature resets the form.
@@ -150,6 +161,7 @@ export function FeatureForm({ selectedFeature, onUpdate, pending, changeTime }: 
     setValues(valuesFromFeature());
     setRotation(selectedFeature?.properties?.iconRotation ?? 0);
     setRotationFixed(canRotate && !isUndefined(selectedFeature?.properties?.iconRotation));
+    setArrowAt(arrowAtOf());
   }
 
   const close = useCallback(() => {
@@ -219,6 +231,20 @@ export function FeatureForm({ selectedFeature, onUpdate, pending, changeTime }: 
     };
     onUpdate({ features: [reversed], action: "reverseDirection" });
   }, [onUpdate, selectedFeature]);
+
+  /** Moves the slide arrow along the line; the middle is the default and is not stored. */
+  const onArrowAtChange = (fraction: number) => {
+    setArrowAt(fraction);
+    const properties: GeoJsonProperties = omitBy(
+      {
+        ...selectedFeature.properties,
+        ...values,
+        arrowAt: fraction === SLIDE_ARROW_DEFAULT_AT ? undefined : fraction,
+      },
+      isEmptyValue,
+    );
+    onUpdate({ features: [{ ...selectedFeature, properties }], action: "featureDetail" });
+  };
 
   const onMoveFlowEdge = useCallback(
     (steps: number) => {
@@ -318,6 +344,9 @@ export function FeatureForm({ selectedFeature, onUpdate, pending, changeTime }: 
   const hasFlowArrow =
     selectedFeature.geometry.type === "Polygon" &&
     EnrichPolygonMap[selectedFeature.properties?.zoneType as string]?.flowArrow !== undefined;
+  const hasSlideArrow =
+    selectedFeature.geometry.type === "LineString" &&
+    EnrichLineStringMap[selectedFeature.properties?.lineType as string]?.slideArrow !== undefined;
   const isDirectionalLine =
     isLine && LineTypes[selectedFeature.properties?.lineType as string]?.directional === true;
 
@@ -432,6 +461,27 @@ export function FeatureForm({ selectedFeature, onUpdate, pending, changeTime }: 
               <span>{t("mapview.rotate")}</span>
             </Button>
           </div>
+        </div>
+      )}
+      {hasSlideArrow && (
+        <div className="mb-2">
+          <label
+            className="mb-1 block text-xs font-semibold text-gray-800"
+            htmlFor={`${baseId}-arrow-at`}
+          >
+            {t("mapview.arrowPosition")}{" "}
+            <span className="text-gray-500">({Math.round(arrowAt * 100)} %)</span>
+          </label>
+          <input
+            id={`${baseId}-arrow-at`}
+            className="w-full"
+            type="range"
+            min={SLIDE_ARROW_MIN_AT * 100}
+            max={SLIDE_ARROW_MAX_AT * 100}
+            step="1"
+            value={Math.round(arrowAt * 100)}
+            onChange={(e) => onArrowAtChange(Number(e.target.value) / 100)}
+          />
         </div>
       )}
       {hasFlowArrow && (

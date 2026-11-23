@@ -156,6 +156,7 @@
   "map": "situation map",
   "mapview": {
     "rotate": "Turn direction",
+    "arrowPosition": "Arrow position along the line",
     "flowEdge": "Flow direction on another edge",
     "flowEdgePrev": "Previous edge",
     "flowEdgeNext": "Next edge",

@@ -156,6 +156,7 @@
   "map": "Aggiornamento grafico",
   "mapview": {
     "rotate": "Direzione di rotazione",
+    "arrowPosition": "Posizione della freccia lungo la linea",
     "flowEdge": "Direzione del flusso su un altro lato",
     "flowEdgePrev": "Lato precedente",
     "flowEdgeNext": "Lato successivo",
