@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Layer } from "types/layer";
 import de from "../../../i18n/locales/de/translations.json";
@@ -121,14 +121,18 @@ describe("ActiveLayersControl", () => {
     expect(dispatch).toHaveBeenCalledTimes(1);
   });
 
-  it("frames but does not activate the message map outside of drawing for a message", () => {
+  it("shows the message map when it is picked outside of drawing for a message, and frames it", () => {
     renderControl([
       layerState("mm", "x", { kind: "MESSAGE_MAP", features: [feature("a", [8, 47])] as never }),
     ]);
 
     fireEvent.click(screen.getByText("Nachrichtenkarte"));
 
-    expect(dispatch).not.toHaveBeenCalled();
+    // active, so shown as it is: the draw controls are off there, as only a message draws on it
+    expect(dispatch).toHaveBeenCalledWith({
+      type: "SET_ACTIVE_LAYER",
+      payload: { layerId: "mm" },
+    });
     expect(mocks.fitBounds).toHaveBeenCalledTimes(1);
   });
 
@@ -217,7 +221,8 @@ describe("ActiveLayersControl", () => {
   describe("adding a layer", () => {
     const open = () => fireEvent.click(screen.getByRole("button", { name: /Layer hinzufügen/ }));
 
-    it("creates the layer for the incident and closes the form", () => {
+    it("creates the layer for the incident, picks it, and closes the form", async () => {
+      mocks.addLayer.mockResolvedValue({ layerId: "new-layer" });
       renderControl([layerState("l1", "Lage")]);
       open();
 
@@ -226,6 +231,12 @@ describe("ActiveLayersControl", () => {
 
       expect(mocks.addLayer).toHaveBeenCalledWith({ incidentId: "inc-1", name: "Neu" });
       expect(screen.queryByPlaceholderText("Layer-Name")).not.toBeInTheDocument();
+      await waitFor(() =>
+        expect(dispatch).toHaveBeenCalledWith({
+          type: "SET_ACTIVE_LAYER",
+          payload: { layerId: "new-layer" },
+        }),
+      );
     });
 
     it("keeps the button disabled for a blank name", () => {

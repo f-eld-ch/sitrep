@@ -3473,7 +3473,7 @@ input CreateIncidentInput {
   """Location display name; server creates the Location record."""
   location: String
   divisions: [DivisionInput!]!
-  """Map layers to create alongside the incident. Empty → one default layer."""
+  """Map layers to create alongside the incident. Empty → none: the message map layer always exists, any other layer is created on request."""
   layers: [LayerInput!]!
 }
 

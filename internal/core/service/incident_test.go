@@ -19,8 +19,8 @@ func TestIncidentService_CreateIncident(t *testing.T) {
 		result, err := svc.CreateIncident(ctx(), "Hochwasser", nil, nil, nil, testActor)
 		require.NoError(t, err)
 		assert.NotEqual(t, shared.IncidentID{}, result.IncidentID)
-		// default layer when no layerNames supplied; the message map layer is separate
-		assert.Len(t, result.LayerIDs, 1)
+		// no layer unless asked for: the message map layer is separate and always there
+		assert.Empty(t, result.LayerIDs)
 		assert.NotEqual(t, shared.LayerID{}, result.MessageMapLayerID)
 	})
 

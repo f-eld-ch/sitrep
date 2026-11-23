@@ -101,7 +101,7 @@ type AccessService interface {
 type CreateIncidentResult struct {
 	IncidentID shared.IncidentID
 	ParentID   *shared.IncidentID
-	// LayerIDs are the layers requested by the caller (or the default layer).
+	// LayerIDs are the layers requested by the caller; none by default (the message map layer is separate).
 	LayerIDs []shared.LayerID
 	// MessageMapLayerID is the system-managed Nachrichtenkarte layer.
 	MessageMapLayerID shared.LayerID

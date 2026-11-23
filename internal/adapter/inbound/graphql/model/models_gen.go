@@ -75,7 +75,7 @@ type CreateIncidentInput struct {
 	// Location display name; server creates the Location record.
 	Location  *string          `json:"location,omitempty"`
 	Divisions []*DivisionInput `json:"divisions"`
-	// Map layers to create alongside the incident. Empty → one default layer.
+	// Map layers to create alongside the incident. Empty → none: the message map layer always exists, any other layer is created on request.
 	Layers []*LayerInput `json:"layers"`
 }
 

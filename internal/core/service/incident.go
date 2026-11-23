@@ -168,13 +168,11 @@ func (s *IncidentService) CreateIncidentWithParentMode(
 		slog.String("name", name), parentAttr, slog.String("actor", actor.Sub))
 
 	// The message map layer is always created by the backend; clients that still
-	// send the legacy "Nachrichtenkarte" layer name must not get a duplicate.
+	// send the legacy "Nachrichtenkarte" layer name must not get a duplicate. No other
+	// layer is created unless asked for: a new incident starts with the message map only.
 	layerNames = slices.DeleteFunc(slices.Clone(layerNames), func(n string) bool {
 		return n == shared.MessageMapLayerName
 	})
-	if len(layerNames) == 0 {
-		layerNames = []string{"Lage"}
-	}
 
 	incID := shared.IncidentID(s.ids.New())
 	at := s.clock.Now()
