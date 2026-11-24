@@ -17,7 +17,9 @@ export interface ExportHeaderText {
   classification: Record<Classification, string>;
   /** "Nachrichtenkarte" or "Führungskarte". */
   mapType: string;
+  baseMapLabel: string;
   baseMap: string;
+  scaleLabel: string;
   state: string;
   keeper: string;
 }
@@ -73,36 +75,40 @@ export const formatScale = (denominator: number): string =>
 /** "24.11.26 / 09h30", as the BABS examples write a time. */
 export const formatState = (time: Date): string => dayjs(time).format("DD.MM.YY / HH[h]mm");
 
-export interface HeaderRow {
-  text: string;
-  /** Relative size: 1 is the body text. */
-  size: number;
-  bold?: boolean;
-}
+/** A line of the table across its whole width, or a label with its value. */
+export type HeaderRow =
+  | {
+      kind: "span";
+      text: string;
+      /** Relative size: 1 is the body text. */
+      size: number;
+      bold?: boolean;
+    }
+  | { kind: "pair"; label: string; value: string };
 
-/** The lines of the header, top to bottom. */
+/** The rows of the header table, top to bottom; a row without a value is left out. */
 export function headerRows(header: ExportHeader): HeaderRow[] {
   const { text } = header;
-  const scale = header.scale === undefined ? "" : ` / ${formatScale(header.scale)}`;
+  const span = (value: string, size: number, bold = false): HeaderRow[] =>
+    value.trim() === "" ? [] : [{ kind: "span", text: value, size, bold }];
+  const pair = (label: string, value: string | undefined): HeaderRow[] =>
+    value === undefined || value.trim() === "" ? [] : [{ kind: "pair", label, value }];
 
   return [
-    { text: text.classification[header.classification].toUpperCase(), size: 0.9, bold: true },
-    { text: header.organisation, size: 1 },
-    { text: header.eventName, size: 1.8, bold: true },
-    {
-      text: header.mapTitle ? `${text.mapType} «${header.mapTitle}»` : text.mapType,
-      size: 1.1,
-      bold: true,
-    },
-    { text: `${text.baseMap}${scale}`, size: 1 },
-    { text: `${text.state}: ${formatState(header.state)}`, size: 1 },
-    { text: header.keeper.trim() === "" ? "" : `${text.keeper}: ${header.keeper}`, size: 1 },
-  ].filter((row) => row.text.trim() !== "");
+    ...span(text.classification[header.classification].toUpperCase(), 0.9, true),
+    ...span(header.organisation, 1),
+    ...span(header.eventName, 1.8, true),
+    ...span(header.mapTitle ? `${text.mapType} «${header.mapTitle}»` : text.mapType, 1.1, true),
+    ...pair(text.baseMapLabel, text.baseMap),
+    ...pair(text.scaleLabel, header.scale === undefined ? undefined : formatScale(header.scale)),
+    ...pair(text.state, formatState(header.state)),
+    ...pair(text.keeper, header.keeper),
+  ];
 }
 
 const BODY_SIZE = 12;
-const PADDING = 10;
-const LINE_GAP = 4;
+const CELL_X = 7;
+const CELL_Y = 4;
 const FONT = "B612, sans-serif";
 
 /** Cuts a line to the width, ending in an ellipsis. */
@@ -115,56 +121,98 @@ function fit(ctx: CanvasRenderingContext2D, text: string, width: number): string
   return `${text.slice(0, end)}…`;
 }
 
+/** How many canvas pixels a pixel of the page at 96 DPI is, for a canvas of the whole page. */
+export const pageScale = (canvasWidth: number, pageWidthMm: number): number =>
+  canvasWidth / ((pageWidthMm / 25.4) * 96);
+
 /**
- * Draws the header in the top left corner of the page, on a white box with a thin frame.
+ * Draws the header as a table in the top left corner of the page: a white box with a frame, the
+ * lines across its width on top, then the labelled rows in two columns, every row ruled off.
  *
- * Sizes are in the pixels of a page at 96 DPI and scaled by `dpi / 96`, so the header takes the
- * same part of the sheet at any resolution. It is at most 40 % of the width of the page.
+ * Sizes are in the pixels of a page at 96 DPI and scaled by `scale` (see `pageScale`), so the
+ * table takes the same part of the sheet at any resolution. It is at most 40 % of the page wide.
  */
 export function drawExportHeader(
   canvas: HTMLCanvasElement,
   header: ExportHeader,
-  dpi: number,
+  scale: number,
 ): void {
   const ctx = canvas.getContext("2d");
-  if (!ctx) return;
-
-  const k = dpi / 96;
   const rows = headerRows(header);
-  if (rows.length === 0) return;
+  if (!ctx || rows.length === 0 || !(scale > 0)) return;
 
-  const font = (row: HeaderRow) =>
-    `${row.bold ? "bold " : ""}${BODY_SIZE * row.size * k}px ${FONT}`;
+  const k = scale;
+  const px = (size: number) => BODY_SIZE * size * k;
+  const font = (size: number, bold = false) => `${bold ? "bold " : ""}${px(size)}px ${FONT}`;
 
   ctx.save();
   ctx.textBaseline = "top";
 
-  const maxWidth = Math.max(canvas.width * 0.4 - 2 * PADDING * k, 40 * k);
-  let width = 0;
-  for (const row of rows) {
-    ctx.font = font(row);
-    width = Math.max(width, Math.min(ctx.measureText(row.text).width, maxWidth));
-  }
-  const height =
-    rows.reduce((sum, row) => sum + BODY_SIZE * row.size * k + LINE_GAP * k, 0) - LINE_GAP * k;
+  const maxWidth = Math.max(canvas.width * 0.4, 80 * k);
+  const textWidth = (text: string, size: number, bold = false) => {
+    ctx.font = font(size, bold);
 
-  const margin = 12 * k;
-  const boxWidth = width + 2 * PADDING * k;
-  const boxHeight = height + 2 * PADDING * k;
+    return ctx.measureText(text).width;
+  };
 
-  ctx.fillStyle = "rgba(255, 255, 255, 0.94)";
-  ctx.fillRect(margin, margin, boxWidth, boxHeight);
+  // The label column is as wide as its widest label; the table as wide as its widest row.
+  const labelWidth = Math.max(
+    0,
+    ...rows.flatMap((r) => (r.kind === "pair" ? [textWidth(r.label, 1)] : [])),
+  );
+  const rowWidth = (row: HeaderRow) =>
+    row.kind === "span"
+      ? textWidth(row.text, row.size, row.bold) + 2 * CELL_X * k
+      : labelWidth + textWidth(row.value, 1, true) + 4 * CELL_X * k;
+  const width = Math.min(Math.max(...rows.map(rowWidth)), maxWidth);
+  const labelColumn = labelWidth + 2 * CELL_X * k;
+  const rowHeight = (row: HeaderRow) => px(row.kind === "span" ? row.size : 1) + 2 * CELL_Y * k;
+  const height = rows.reduce((sum, row) => sum + rowHeight(row), 0);
+
+  const x0 = 12 * k;
+  const y0 = 12 * k;
+
+  ctx.fillStyle = "rgba(255, 255, 255, 0.96)";
+  ctx.fillRect(x0, y0, width, height);
+
   ctx.strokeStyle = "#000000";
-  ctx.lineWidth = Math.max(1, k);
-  ctx.strokeRect(margin, margin, boxWidth, boxHeight);
-
   ctx.fillStyle = "#000000";
-  let y = margin + PADDING * k;
-  for (const row of rows) {
-    ctx.font = font(row);
-    ctx.fillText(fit(ctx, row.text, maxWidth), margin + PADDING * k, y);
-    y += BODY_SIZE * row.size * k + LINE_GAP * k;
-  }
+  ctx.lineWidth = Math.max(1, k);
 
+  let y = y0;
+  rows.forEach((row, index) => {
+    if (index > 0) {
+      ctx.beginPath();
+      ctx.moveTo(x0, y);
+      ctx.lineTo(x0 + width, y);
+      ctx.stroke();
+    }
+
+    if (row.kind === "span") {
+      ctx.font = font(row.size, row.bold);
+      ctx.fillText(fit(ctx, row.text, width - 2 * CELL_X * k), x0 + CELL_X * k, y + CELL_Y * k);
+    } else {
+      ctx.font = font(1);
+      ctx.fillText(
+        fit(ctx, row.label, labelColumn - 2 * CELL_X * k),
+        x0 + CELL_X * k,
+        y + CELL_Y * k,
+      );
+      ctx.font = font(1, true);
+      ctx.fillText(
+        fit(ctx, row.value, width - labelColumn - 2 * CELL_X * k),
+        x0 + labelColumn + CELL_X * k,
+        y + CELL_Y * k,
+      );
+      // the rule between the label and its value
+      ctx.beginPath();
+      ctx.moveTo(x0 + labelColumn, y);
+      ctx.lineTo(x0 + labelColumn, y + rowHeight(row));
+      ctx.stroke();
+    }
+    y += rowHeight(row);
+  });
+
+  ctx.strokeRect(x0, y0, width, height);
   ctx.restore();
 }

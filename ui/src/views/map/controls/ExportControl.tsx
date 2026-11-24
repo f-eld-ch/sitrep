@@ -19,10 +19,11 @@ import {
   drawExportHeader,
   type ExportHeader,
   type ExportHeaderText,
+  pageScale,
   scaleDenominator,
 } from "./exportHeader";
-import { addHeaderFields, type HeaderFieldOptions } from "./exportDialogHeader";
-import { useExportHeaderSettings } from "./ExportHeaderSettings";
+import { addHeaderFields, type HeaderFieldOptions, type HeaderFields } from "./exportDialogHeader";
+import { MAX_HEADER_TEXT, useExportHeaderSettings } from "./ExportHeaderSettings";
 
 export interface ExportControlProps {
   /** Placement of the control relative to the map. */
@@ -59,6 +60,14 @@ export function exportFileName(incidentName: string | undefined): string {
     .slice(0, 80);
 
   return name === "" ? FILE_NAME_PREFIX : `${FILE_NAME_PREFIX}-${name}`;
+}
+
+/** Where an export gets its header from. */
+export interface HeaderSource {
+  /** The header for a view of the map. */
+  header: (view: MapView) => ExportHeader;
+  /** Whether the user wants one. */
+  enabled: () => boolean;
 }
 
 /** What the dialog hands over for an export; the part the header needs. */
@@ -151,16 +160,29 @@ async function saveFile(
  */
 export class SitrepExportControl extends MaplibreExportControl {
   private offered = "";
-  private makeHeader: ((view: MapView) => ExportHeader | undefined) | undefined;
+  private source: HeaderSource | undefined;
   private headerFields: (() => HeaderFieldOptions) | undefined;
+  /** The page and view the dialog's preview was last made for. */
+  private previewOf: { size: [number, number]; view: MapView } | undefined;
+  private previewFields: HeaderFields | undefined;
 
-  /** Where the header of an export comes from (a view of the map to a header, or none). */
-  setHeaderSource(
-    makeHeader: (view: MapView) => ExportHeader | undefined,
-    headerFields: () => HeaderFieldOptions,
-  ): void {
-    this.makeHeader = makeHeader;
+  /** Where the header of an export comes from, and what its fields in the dialog show and do. */
+  setHeaderSource(source: HeaderSource, headerFields: () => HeaderFieldOptions): void {
+    this.source = source;
     this.headerFields = headerFields;
+  }
+
+  /** The header on the dialog's preview as well: it follows the preview being made again. */
+  protected async renderPreview(
+    map: Parameters<MaplibreExportControl["onAdd"]>[0],
+    settings: ExportSettingsLike,
+    dpi: number,
+  ): Promise<HTMLCanvasElement> {
+    const canvas = await super.renderPreview(map, settings as never, dpi);
+    this.previewOf = { size: settings.size, view: settings.view };
+    this.previewFields?.refresh();
+
+    return canvas;
   }
 
   openDialog(): void {
@@ -169,7 +191,16 @@ export class SitrepExportControl extends MaplibreExportControl {
     // The dialog is in the page as soon as it is opened; if not yet, a frame later.
     const add = () => {
       const dialog = document.querySelector<HTMLElement>(".gl-export-dialog");
-      if (dialog && this.headerFields) addHeaderFields(dialog, this.headerFields());
+      if (dialog && this.headerFields) {
+        this.previewFields?.dispose();
+        this.previewFields = addHeaderFields(dialog, {
+          ...this.headerFields(),
+          preview: () =>
+            this.previewOf && this.source
+              ? { header: this.source.header(this.previewOf.view), size: this.previewOf.size }
+              : undefined,
+        });
+      }
 
       return dialog !== null;
     };
@@ -180,7 +211,10 @@ export class SitrepExportControl extends MaplibreExportControl {
     map: Parameters<MaplibreExportControl["onAdd"]>[0],
     settings: ExportSettingsLike,
   ): Promise<boolean> {
-    const header = canHaveHeader(settings) ? this.makeHeader?.(settings.view) : undefined;
+    const header =
+      canHaveHeader(settings) && this.source?.enabled()
+        ? this.source.header(settings.view)
+        : undefined;
     // Nothing of its own to add: the library does what it always did.
     if (!header) return super.exportMap(map, settings as never);
 
@@ -189,7 +223,7 @@ export class SitrepExportControl extends MaplibreExportControl {
       const config = this.createGeneratorConfig(settings as never);
       const canvas = await this.createGenerator(map, { ...config, format: Format.PNG }).toCanvas();
       await document.fonts?.load?.("12px B612");
-      drawExportHeader(canvas, header, settings.dpi);
+      drawExportHeader(canvas, header, pageScale(canvas.width, settings.size[0]));
 
       const { blob, extension } = await encodePage(canvas, settings);
       const base = settings.fileName.replace(/\.[A-Za-z0-9]{2,4}$/, "");
@@ -250,11 +284,14 @@ function ExportControl(props: ExportControlProps): null {
 
   // The header is made when the export is, from what the map shows then: the control lives on
   // and reads the latest through this.
-  const latest = useRef<(view: MapView) => ExportHeader | undefined>(() => undefined);
+  const latest = useRef<HeaderSource>({
+    header: () => {
+      throw new Error("not set");
+    },
+    enabled: () => false,
+  });
   useEffect(() => {
-    latest.current = (view) => {
-      if (!settings.enabled) return undefined;
-
+    const header = (view: MapView): ExportHeader => {
       const active = layers.layers.find((l) => l.layer.id === layers.activeLayer)?.layer;
       const messageMap = active?.kind === "MESSAGE_MAP";
       const text: ExportHeaderText = {
@@ -264,23 +301,26 @@ function ExportControl(props: ExportControlProps): null {
           geheim: t("exportHeader.classifications.geheim"),
         },
         mapType: t(messageMap ? "exportHeader.messageMap" : "exportHeader.commandMap"),
+        baseMapLabel: t("exportHeader.baseMapLabel"),
         baseMap: t("exportHeader.baseMap"),
+        scaleLabel: t("exportHeader.scaleLabel"),
         state: t("exportHeader.state"),
         keeper: t("exportHeader.keeper"),
       };
 
       return {
         classification: settings.classification,
-        organisation: window.location.hostname,
+        organisation: settings.organisation.trim() || window.location.hostname,
         eventName: incidentName ?? "",
         // The layer's name is the title of a Führungskarte; the Nachrichtenkarte has no other.
         mapTitle: !messageMap ? active?.name : undefined,
         scale: scaleDenominator(view),
         state: asOf ?? new Date(),
-        keeper: user.name || user.username,
+        keeper: settings.keeper.trim() || user.name || user.username,
         text,
       };
     };
+    latest.current = { header, enabled: () => settings.enabled };
   });
   // The switch and the classification in the export dialog.
   const fields = useRef<() => HeaderFieldOptions>(() => {
@@ -290,9 +330,15 @@ function ExportControl(props: ExportControlProps): null {
     fields.current = () => ({
       enabled: settings.enabled,
       classification: settings.classification,
+      organisation: settings.organisation,
+      keeper: settings.keeper,
+      defaults: { organisation: window.location.hostname, keeper: user.name || user.username },
+      maxLength: MAX_HEADER_TEXT,
       labels: {
         title: t("exportHeader.title"),
         classification: t("exportHeader.classification"),
+        organisation: t("exportHeader.organisation"),
+        keeper: t("exportHeader.keeper"),
         unavailable: t("exportHeader.unavailable"),
         classifications: {
           intern: t("exportHeader.classifications.intern"),
@@ -305,7 +351,10 @@ function ExportControl(props: ExportControlProps): null {
   });
   useEffect(() => {
     control.setHeaderSource(
-      (view) => latest.current(view),
+      {
+        header: (view) => latest.current.header(view),
+        enabled: () => latest.current.enabled(),
+      },
       () => fields.current(),
     );
   }, [control]);

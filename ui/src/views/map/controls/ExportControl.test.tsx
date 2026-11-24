@@ -241,8 +241,9 @@ describe("ExportControl header", () => {
     expect(mocks.superExport).not.toHaveBeenCalled();
     // the page is made as an image, which the header is drawn on
     expect(mocks.generate.mock.calls[0][0]).toMatchObject({ format: "png" });
-    const [, header, dpi] = mocks.draw.mock.calls[0];
-    expect(dpi).toBe(300);
+    const [, header, scale] = mocks.draw.mock.calls[0];
+    // A3 at 300 DPI: 300 / 96 canvas pixels for a pixel of the page at 96 DPI
+    expect(scale).toBeCloseTo(300 / 96, 2);
     expect(header).toMatchObject({
       classification: "intern",
       eventName: "Brand",
@@ -311,6 +312,26 @@ describe("ExportControl header", () => {
     await exportMap(view.control(), settings());
 
     expect(mocks.draw.mock.calls[0][1].classification).toBe("geheim");
+  });
+
+  it("uses the organisation and the keeper that were typed, instead of the domain and the user", async () => {
+    window.localStorage.setItem(
+      "sitrep.exportHeader",
+      JSON.stringify({
+        enabled: true,
+        classification: "intern",
+        organisation: "ZSO Musterwil",
+        keeper: "E. Muster",
+      }),
+    );
+    const view = mount({ incident: "Brand", user: { username: "emuster", name: "Erika Muster" } });
+
+    await exportMap(view.control(), settings());
+
+    expect(mocks.draw.mock.calls[0][1]).toMatchObject({
+      organisation: "ZSO Musterwil",
+      keeper: "E. Muster",
+    });
   });
 
   it("reports a page that could not be made as a failed export", async () => {

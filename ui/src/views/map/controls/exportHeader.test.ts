@@ -5,6 +5,7 @@ import {
   formatScale,
   formatState,
   headerRows,
+  pageScale,
   scaleDenominator,
 } from "./exportHeader";
 
@@ -19,7 +20,9 @@ const header = (over: Partial<ExportHeader> = {}): ExportHeader => ({
   text: {
     classification: { intern: "Intern", vertraulich: "Vertraulich", geheim: "Geheim" },
     mapType: "Führungskarte",
+    baseMapLabel: "Basiskarte",
     baseMap: "Landeskarte swisstopo",
+    scaleLabel: "Massstab",
     state: "Stand",
     keeper: "Kartenführung",
   },
@@ -64,27 +67,37 @@ describe("formatting", () => {
 });
 
 describe("headerRows", () => {
-  it("lists what the sheet says, top to bottom", () => {
-    expect(headerRows(header()).map((r) => r.text)).toEqual([
-      "INTERN",
-      "sitrep.example.ch",
-      "Hochwasser",
-      "Führungskarte «Lage Nord»",
-      "Landeskarte swisstopo / 1:25 000",
-      "Stand: 24.11.26 / 09h30",
-      "Kartenführung: Erika Muster",
+  it("lists the lines across the table, then the labelled rows", () => {
+    expect(headerRows(header())).toEqual([
+      { kind: "span", text: "INTERN", size: 0.9, bold: true },
+      { kind: "span", text: "sitrep.example.ch", size: 1, bold: false },
+      { kind: "span", text: "Hochwasser", size: 1.8, bold: true },
+      { kind: "span", text: "Führungskarte «Lage Nord»", size: 1.1, bold: true },
+      { kind: "pair", label: "Basiskarte", value: "Landeskarte swisstopo" },
+      { kind: "pair", label: "Massstab", value: "1:25 000" },
+      { kind: "pair", label: "Stand", value: "24.11.26 / 09h30" },
+      { kind: "pair", label: "Kartenführung", value: "Erika Muster" },
     ]);
   });
 
-  it("leaves out what is not known", () => {
+  it("leaves out a row that has nothing to say", () => {
     const rows = headerRows(
-      header({ mapTitle: undefined, scale: undefined, eventName: "", keeper: "" }),
-    ).map((r) => r.text);
+      header({ mapTitle: undefined, scale: undefined, eventName: "", keeper: " " }),
+    );
+    const labels = rows.map((r) => (r.kind === "pair" ? r.label : r.text));
 
-    expect(rows).toContain("Führungskarte");
-    expect(rows).toContain("Landeskarte swisstopo");
-    expect(rows).not.toContain("Hochwasser");
-    expect(rows.some((r) => r.startsWith("Kartenführung:"))).toBe(false);
+    expect(labels).toContain("Führungskarte");
+    expect(labels).not.toContain("Hochwasser");
+    expect(labels).not.toContain("Massstab");
+    expect(labels).not.toContain("Kartenführung");
+  });
+});
+
+describe("pageScale", () => {
+  it("is how many pixels a pixel of the page at 96 DPI is", () => {
+    // A3 is 420 mm wide: 1 587 pixels at 96 DPI, 4 961 at 300 DPI
+    expect(pageScale(1587, 420)).toBeCloseTo(1, 2);
+    expect(pageScale(4961, 420)).toBeCloseTo(300 / 96, 2);
   });
 });
 
@@ -99,6 +112,10 @@ describe("drawExportHeader", () => {
       }),
       fillRect: vi.fn((...a: number[]) => calls.push(`fillRect ${a.join(",")}`)),
       strokeRect: vi.fn(),
+      beginPath: vi.fn(),
+      moveTo: vi.fn(),
+      lineTo: vi.fn(),
+      stroke: vi.fn(),
       fillText: vi.fn((text: string) => calls.push(`text ${text}`)),
       font: "",
       fillStyle: "",
@@ -113,7 +130,7 @@ describe("drawExportHeader", () => {
   it("draws the frame in the top left and every line in it", () => {
     const { canvas, ctx } = fakeCanvas(1587);
 
-    drawExportHeader(canvas, header(), 96);
+    drawExportHeader(canvas, header(), 1);
 
     expect(ctx.fillRect).toHaveBeenCalledTimes(1);
     const [x, y, w] = ctx.fillRect.mock.calls[0];
@@ -124,11 +141,32 @@ describe("drawExportHeader", () => {
     expect(ctx.fillText.mock.calls.map((c) => c[0])).toContain("INTERN");
   });
 
+  it("rules the rows off and the labels from their values, as a table", () => {
+    const { canvas, ctx } = fakeCanvas(1587);
+
+    drawExportHeader(canvas, header(), 1);
+
+    // eight rows: seven rules between them, and one between label and value for each labelled row
+    expect(ctx.moveTo).toHaveBeenCalledTimes(7 + 4);
+    expect(ctx.strokeRect).toHaveBeenCalledTimes(1);
+    const texts = ctx.fillText.mock.calls.map((c) => c[0]);
+    expect(texts).toEqual(expect.arrayContaining(["Stand", "24.11.26 / 09h30", "Kartenführung"]));
+  });
+
+  it("does not draw for a scale that is not usable", () => {
+    const { canvas, ctx } = fakeCanvas(1000);
+
+    drawExportHeader(canvas, header(), 0);
+    drawExportHeader(canvas, header(), Number.NaN);
+
+    expect(ctx.fillRect).not.toHaveBeenCalled();
+  });
+
   it("takes the same part of the sheet at any resolution", () => {
     const low = fakeCanvas(1587);
     const high = fakeCanvas(4961);
-    drawExportHeader(low.canvas, header(), 96);
-    drawExportHeader(high.canvas, header(), 300);
+    drawExportHeader(low.canvas, header(), 1);
+    drawExportHeader(high.canvas, header(), 300 / 96);
 
     const share = (c: ReturnType<typeof fakeCanvas>, width: number) =>
       c.ctx.fillRect.mock.calls[0][2] / width;
@@ -138,7 +176,7 @@ describe("drawExportHeader", () => {
   it("cuts a line that is too long instead of running off the page", () => {
     const { canvas, ctx } = fakeCanvas(1000);
 
-    drawExportHeader(canvas, header({ eventName: "x".repeat(400) }), 96);
+    drawExportHeader(canvas, header({ eventName: "x".repeat(400) }), 1);
 
     const drawn = ctx.fillText.mock.calls.map((c) => c[0] as string);
     expect(drawn.some((t) => t.endsWith("…"))).toBe(true);
@@ -146,7 +184,7 @@ describe("drawExportHeader", () => {
 
   it("copes with a canvas that cannot be drawn on", () => {
     expect(() =>
-      drawExportHeader({ width: 100, height: 100, getContext: () => null } as never, header(), 96),
+      drawExportHeader({ width: 100, height: 100, getContext: () => null } as never, header(), 1),
     ).not.toThrow();
   });
 });

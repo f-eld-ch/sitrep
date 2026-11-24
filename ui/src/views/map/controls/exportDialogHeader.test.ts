@@ -10,6 +10,7 @@ function dialog(format = "pdf", vector = false): HTMLElement {
   const root = document.createElement("div");
   root.className = "gl-export-dialog";
   root.innerHTML = `
+    <div class="gl-export-dialog__page"><canvas class="gl-export-dialog__canvas" width="670" height="474"></canvas></div>
     <div class="gl-export-field gl-export-field--pageSize svelte-x">
       <label class="gl-export-field__label svelte-x" for="p"><span aria-hidden="true" class="gl-export-icon gl-export-icon--pageSize"><svg class="icon"></svg></span> <span>Page Size</span></label>
       <div class="gl-export-field__control"><select id="p" name="p"><option value="a">A3</option></select></div>
@@ -25,7 +26,17 @@ function dialog(format = "pdf", vector = false): HTMLElement {
       <label class="gl-export-field__label svelte-x" for="s"><span aria-hidden="true" class="gl-export-icon gl-export-icon--scalebar"><svg class="icon"></svg></span> <span>Scale bar</span></label>
       <div class="gl-export-field__control"><input class="gl-export-switch" type="checkbox" role="switch" id="s" name="s"></div>
     </div>
-    <div class="gl-export-field gl-export-field--northIcon"></div>`;
+    <div class="gl-export-field gl-export-field--northIcon gl-export-field--switch"></div>
+    <div class="gl-export-field-group gl-export-field-group--northIcon">
+      <div class="gl-export-field gl-export-field--northIconSymbol gl-export-field--inline">
+        <label class="gl-export-field__label"><span aria-hidden="true" class="gl-export-icon gl-export-icon--northIconSymbol"><svg></svg></span> <span>Icon symbol</span></label>
+        <div class="gl-export-field__control"><button type="button" class="gl-export-north-icon-picker">x</button></div>
+      </div>
+    </div>
+    <div class="gl-export-field gl-export-field--fileName">
+      <label class="gl-export-field__label" for="f"><span>File name</span></label>
+      <div class="gl-export-field__control"><input class="gl-export-input" type="text" id="f" name="f" value="map"></div>
+    </div>`;
   document.body.append(root);
 
   return root;
@@ -34,9 +45,15 @@ function dialog(format = "pdf", vector = false): HTMLElement {
 const options = (over: Partial<HeaderFieldOptions> = {}): HeaderFieldOptions => ({
   enabled: true,
   classification: "intern",
+  organisation: "",
+  keeper: "",
+  defaults: { organisation: "sitrep.example.ch", keeper: "Erika Muster" },
+  maxLength: 80,
   labels: {
     title: "Kartenkopf",
     classification: "Klassifizierung",
+    organisation: "Organisation",
+    keeper: "Kartenführung",
     unavailable: "Nicht möglich",
     classifications: { intern: "Intern", vertraulich: "Vertraulich", geheim: "Geheim" },
   },
@@ -50,38 +67,57 @@ afterEach(() => {
 
 const toggle = (root: HTMLElement) =>
   root.querySelector<HTMLInputElement>(".gl-export-field--mapHeader input")!;
-const select = (root: HTMLElement) =>
-  root.querySelector<HTMLSelectElement>(".gl-export-field--mapHeaderClassification select")!;
+const group = (root: HTMLElement) =>
+  root.querySelector<HTMLElement>(".gl-export-field-group--mapHeader")!;
+const row = (root: HTMLElement, name: string) =>
+  root.querySelector<HTMLElement>(`.gl-export-field--mapHeader-${name}`)!;
+const select = (root: HTMLElement) => row(root, "classification").querySelector("select")!;
+const input = (root: HTMLElement, name: string) => row(root, name).querySelector("input")!;
 
 describe("addHeaderFields", () => {
-  it("adds a switch and the classification after the scale bar, like the fields of the dialog", () => {
+  it("adds a switch and a group of details after the scale bar, like the dialog's north icon", () => {
     const root = dialog();
     addHeaderFields(root, options());
 
-    const fields = [...root.querySelectorAll(".gl-export-field")].map((f) => f.className);
-    const at = fields.findIndex((c) => c.includes("--scalebar"));
-    expect(fields[at + 1]).toContain("gl-export-field--mapHeader");
-    expect(fields[at + 2]).toContain("gl-export-field--mapHeaderClassification");
-
-    expect(root.querySelector(".gl-export-field--mapHeader label")?.textContent).toContain(
-      "Kartenkopf",
+    const children = [...root.querySelectorAll(".gl-export-field, .gl-export-field-group")].map(
+      (f) => f.className,
     );
+    const at = children.findIndex((c) => c.includes("--scalebar"));
+    expect(children[at + 1]).toContain("gl-export-field--mapHeader ");
+    expect(children[at + 2]).toContain("gl-export-field-group--mapHeader");
+
+    // the rows are rows of the group, built like the ones of the north icon
+    expect([...group(root).children].map((c) => c.className.replace(/ svelte-\w+/g, ""))).toEqual([
+      "gl-export-field gl-export-field--mapHeader-classification gl-export-field--inline",
+      "gl-export-field gl-export-field--mapHeader-organisation gl-export-field--inline",
+      "gl-export-field gl-export-field--mapHeader-keeper gl-export-field--inline",
+    ]);
+    expect(row(root, "keeper").querySelector("label")?.textContent).toContain("Kartenführung");
     expect(toggle(root).checked).toBe(true);
-    // the fields of the library are left as they were
-    expect(root.querySelector("#s")).not.toBeNull();
-    expect(root.querySelectorAll("#p")).toHaveLength(1);
+    // the north icon's own group is left as it was
+    expect(root.querySelector(".gl-export-field-group--northIcon")).not.toBeNull();
+    expect(root.querySelectorAll(".gl-export-north-icon-picker")).toHaveLength(1);
   });
 
-  it("gives the copies ids of their own, and the label points at its control", () => {
+  it("gives the copies ids of their own, and every label points at its control", () => {
     const root = dialog();
     addHeaderFields(root, options());
 
-    const input = toggle(root);
-    expect(input.id).not.toBe("s");
-    expect(root.querySelector(".gl-export-field--mapHeader label")?.getAttribute("for")).toBe(
-      input.id,
-    );
-    expect(select(root).id).not.toBe("p");
+    const ids = [
+      toggle(root),
+      select(root),
+      input(root, "organisation"),
+      input(root, "keeper"),
+    ].map((c) => c.id);
+    expect(new Set(ids).size).toBe(4);
+    expect(ids).not.toContain("s");
+    expect(ids).not.toContain("p");
+    expect(ids).not.toContain("f");
+    for (const name of ["classification", "organisation", "keeper"]) {
+      expect(row(root, name).querySelector("label")?.getAttribute("for")).toBe(
+        row(root, name).querySelector("select, input")?.id,
+      );
+    }
   });
 
   it("lists the classifications in the language given, and shows the chosen one", () => {
@@ -96,7 +132,17 @@ describe("addHeaderFields", () => {
     expect(select(root).value).toBe("geheim");
   });
 
-  it("reports a change of the switch and of the classification", () => {
+  it("shows what is typed, and the automatic values as what the empty fields would give", () => {
+    const root = dialog();
+    addHeaderFields(root, options({ organisation: "ZSO Musterwil" }));
+
+    expect(input(root, "organisation").value).toBe("ZSO Musterwil");
+    expect(input(root, "keeper").value).toBe("");
+    expect(input(root, "keeper").placeholder).toBe("Erika Muster");
+    expect(input(root, "organisation").maxLength).toBe(80);
+  });
+
+  it("reports a change of the switch, of the classification and of the texts", () => {
     const onChange = vi.fn();
     const root = dialog();
     addHeaderFields(root, options({ onChange }));
@@ -108,21 +154,27 @@ describe("addHeaderFields", () => {
     select(root).value = "vertraulich";
     select(root).dispatchEvent(new Event("change", { bubbles: true }));
     expect(onChange).toHaveBeenCalledWith({ classification: "vertraulich" });
+
+    input(root, "organisation").value = "  ZSO Musterwil ";
+    input(root, "organisation").dispatchEvent(new Event("input", { bubbles: true }));
+    expect(onChange).toHaveBeenCalledWith({ organisation: "ZSO Musterwil" });
+
+    input(root, "keeper").value = "E. Muster";
+    input(root, "keeper").dispatchEvent(new Event("input", { bubbles: true }));
+    expect(onChange).toHaveBeenCalledWith({ keeper: "E. Muster" });
   });
 
-  it("hides the classification while the header is off", () => {
+  it("hides the group while the header is off", () => {
     const root = dialog();
     addHeaderFields(root, options({ enabled: false }));
 
-    expect(
-      root.querySelector<HTMLElement>(".gl-export-field--mapHeaderClassification")!.hidden,
-    ).toBe(true);
+    expect(group(root).hidden).toBe(true);
+    expect(group(root).style.display).toBe("none");
 
     toggle(root).checked = true;
     toggle(root).dispatchEvent(new Event("change", { bubbles: true }));
-    expect(
-      root.querySelector<HTMLElement>(".gl-export-field--mapHeaderClassification")!.hidden,
-    ).toBe(false);
+    expect(group(root).hidden).toBe(false);
+    expect(group(root).style.display).toBe("");
   });
 
   it("turns the switch off for a format that cannot carry the header, and back for one that can", () => {
@@ -134,6 +186,7 @@ describe("addHeaderFields", () => {
     root.querySelector<HTMLInputElement>("input[value=pdf]")!.checked = false;
     root.dispatchEvent(new Event("change", { bubbles: true }));
     expect(toggle(root).disabled).toBe(true);
+    expect(group(root).hidden).toBe(true);
     expect(root.querySelector<HTMLElement>(".gl-export-field--mapHeader")!.title).toBe(
       "Nicht möglich",
     );
@@ -153,6 +206,63 @@ describe("addHeaderFields", () => {
     const other = document.createElement("div");
     expect(() => addHeaderFields(other, options())).not.toThrow();
     expect(other.children).toHaveLength(0);
+  });
+
+  it("adds nothing when a field it copies is missing from the dialog", () => {
+    const root = dialog();
+    root.querySelector(".gl-export-field-group--northIcon")!.remove();
+
+    addHeaderFields(root, options());
+
+    expect(root.querySelector(".gl-export-field--mapHeader")).toBeNull();
+  });
+});
+
+describe("the preview", () => {
+  const header = {
+    classification: "intern",
+    organisation: "x",
+    eventName: "Brand",
+    scale: 25000,
+    state: new Date(2026, 10, 24, 9, 30),
+    keeper: "k",
+    text: {
+      classification: { intern: "Intern", vertraulich: "Vertraulich", geheim: "Geheim" },
+      mapType: "Führungskarte",
+      baseMapLabel: "Basiskarte",
+      baseMap: "Landeskarte",
+      scaleLabel: "Massstab",
+      state: "Stand",
+      keeper: "Kartenführung",
+    },
+  } as never;
+
+  it("gets a canvas over the page, drawn again when the details change, and taken away with the fields", () => {
+    const root = dialog();
+    const preview = vi.fn(() => ({ header, size: [420, 297] as [number, number] }));
+    const fields = addHeaderFields(root, options({ preview }));
+
+    const overlay = root.querySelector<HTMLCanvasElement>(".gl-export-header-preview")!;
+    expect(overlay).not.toBeNull();
+    // the size of the page canvas it lies over
+    expect(overlay.width).toBe(670);
+    expect(overlay.height).toBe(474);
+    const calls = preview.mock.calls.length;
+
+    input(root, "keeper").dispatchEvent(new Event("input", { bubbles: true }));
+    expect(preview.mock.calls.length).toBeGreaterThan(calls);
+
+    fields.refresh();
+    fields.dispose();
+    expect(root.querySelector(".gl-export-header-preview")).toBeNull();
+  });
+
+  it("asks for no header while the switch is off or the format cannot carry it", () => {
+    const root = dialog();
+    const preview = vi.fn(() => undefined);
+    addHeaderFields(root, options({ enabled: false, preview }));
+
+    expect(preview).not.toHaveBeenCalled();
   });
 });
 
