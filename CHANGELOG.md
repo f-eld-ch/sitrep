@@ -1,5 +1,11 @@
 ## [unreleased]
 
+### ⛰️  Features
+
+- *(layer)* A new incident starts with the message map only ([#2173](https://github.com/f-eld-ch/sitrep/issues/2173)) - ([c289352](https://github.com/f-eld-ch/sitrep/commit/c28935289b60256c3c014b1c0539618ef4be4502))
+- *(map)* Improve map edit panel with with symbol search and curved flooded areas ([#2172](https://github.com/f-eld-ch/sitrep/issues/2172)) - ([de5e1df](https://github.com/f-eld-ch/sitrep/commit/de5e1dfef4c2b0b157fc113cb16978c545b0f508))
+- *(map)* Put a marker where the search took the map ([#2171](https://github.com/f-eld-ch/sitrep/issues/2171)) - ([db9f226](https://github.com/f-eld-ch/sitrep/commit/db9f226f5aa9792013ccc195114137df3a87e22e))
+
 ### 🐛 Bug Fixes
 
 - *(map)* Translate the message map layer in the layer card of read-only maps ([#2146](https://github.com/f-eld-ch/sitrep/issues/2146)) - ([6ffa6d8](https://github.com/f-eld-ch/sitrep/commit/6ffa6d87db71e0b6d7db60c9e5e601f5006be9e4))
@@ -19,6 +25,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump i18next from 27.2.2 to 27.2.6 in /ui ([#2165](https://github.com/f-eld-ch/sitrep/issues/2165)) - ([ad4835f](https://github.com/f-eld-ch/sitrep/commit/ad4835ff40f43bdf201acd533f17c56a1225aa6a))
 - *(deps)* Bump react-i18next from 18.0.2 to 18.0.3 in /ui ([#2154](https://github.com/f-eld-ch/sitrep/issues/2154)) - ([3d19e14](https://github.com/f-eld-ch/sitrep/commit/3d19e14787107716daa53900fef3c453e56882e9))
 - *(deps)* Bump react-dropzone from 20.2.0 to 20.2.1 in /ui ([#2155](https://github.com/f-eld-ch/sitrep/issues/2155)) - ([131d0f8](https://github.com/f-eld-ch/sitrep/commit/131d0f8a8492a40914d1c65ee605f09160626107))
 - *(deps)* Bump i18next from 27.1.5 to 27.2.2 in /ui ([#2157](https://github.com/f-eld-ch/sitrep/issues/2157)) - ([8f13e07](https://github.com/f-eld-ch/sitrep/commit/8f13e079343c95d638782751013aa44f2f048e97))
