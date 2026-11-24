@@ -1,65 +1,105 @@
 import { render } from "@testing-library/react";
-import i18next from "i18next";
+import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import ExportControl from "./ExportControl";
+import { IncidentContext } from "utils";
 
 const mocks = vi.hoisted(() => ({
-  created: [] as unknown[],
-  useControl: vi.fn(),
+  controls: [] as { options: { Filename?: string }; dialogState?: { fileName: string } }[],
 }));
 
 vi.mock("@watergis/maplibre-gl-export", () => ({
   Format: { PDF: "pdf" },
   PageOrientation: { Landscape: "landscape" },
-  Size: { A3: [420, 297] },
+  Size: { A3: "a3" },
   MaplibreExportControl: class {
-    constructor(options: unknown) {
-      mocks.created.push(options);
+    options: { Filename?: string };
+    dialogState?: { fileName: string };
+    constructor(options: { Filename?: string }) {
+      this.options = options;
+      mocks.controls.push(this);
     }
   },
 }));
 vi.mock("@watergis/maplibre-gl-export/dist/maplibre-gl-export.css", () => ({}));
-vi.mock("react-map-gl/maplibre", () => ({
-  useControl: (factory: () => unknown, options: unknown) => {
-    mocks.useControl(options);
-    factory();
-  },
-}));
+vi.mock("i18next", () => ({ default: { language: "de" } }));
+vi.mock("react-map-gl/maplibre", async () => {
+  const { useMemo } = await import("react");
+  return {
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- one instance, like the real hook
+    useControl: (factory: () => unknown) => useMemo(factory, []),
+  };
+});
+
+import ExportControl, { exportFileName } from "./ExportControl";
+
+describe("exportFileName", () => {
+  it.each([
+    ["Hochwasser", "sitrep-map-Hochwasser"],
+    ["Brand Altstadt 2026", "sitrep-map-Brand-Altstadt-2026"],
+    ["Übung «Rhone»", "sitrep-map-Übung-«Rhone»"],
+    ['A/B: "C"?*<>|', "sitrep-map-A-B-C"],
+    ["  Lage   Nord  ", "sitrep-map-Lage-Nord"],
+    ["..versteckt..", "sitrep-map-versteckt"],
+  ])("makes %j into %j", (name, expected) => {
+    expect(exportFileName(name)).toBe(expected);
+  });
+
+  it("falls back to the plain prefix without a usable name", () => {
+    expect(exportFileName(undefined)).toBe("sitrep-map");
+    expect(exportFileName("")).toBe("sitrep-map");
+    expect(exportFileName(" /// ")).toBe("sitrep-map");
+  });
+
+  it("keeps a very long name to a length a file can have", () => {
+    expect(exportFileName("x".repeat(300)).length).toBeLessThanOrEqual("sitrep-map-".length + 80);
+  });
+});
 
 describe("ExportControl", () => {
   beforeEach(() => {
-    mocks.created = [];
-    mocks.useControl.mockClear();
+    mocks.controls.length = 0;
   });
 
-  it("renders nothing itself and adds the control at the requested position", () => {
-    const { container } = render(<ExportControl position="top-left" />);
+  const render_ = (name: string | undefined) => {
+    const tree = (n: string | undefined): ReactNode => (
+      <IncidentContext.Provider
+        value={{
+          state: { incident: n ? { name: n } : null, loadedForId: "i" } as never,
+          dispatch: () => null,
+        }}
+      >
+        <ExportControl />
+      </IncidentContext.Provider>
+    );
+    const view = render(tree(name));
 
-    expect(container).toBeEmptyDOMElement();
-    expect(mocks.useControl).toHaveBeenCalledWith({ position: "top-left" });
+    return { rerender: (n: string | undefined) => view.rerender(tree(n)) };
+  };
+
+  it("offers the name of the incident as the name of the file", () => {
+    render_("Hochwasser");
+
+    expect(mocks.controls[0].options.Filename).toBe("sitrep-map-Hochwasser");
   });
 
-  it("prints an A3 landscape PDF at 300 dpi", () => {
-    render(<ExportControl />);
+  it("offers the plain prefix until the incident is known, then the incident's name", () => {
+    const view = render_(undefined);
+    expect(mocks.controls[0].options.Filename).toBe("sitrep-map");
 
-    expect(mocks.created[0]).toMatchObject({
-      PageSize: [420, 297],
-      PageOrientation: "landscape",
-      Format: "pdf",
-      DPI: 300,
-    });
+    view.rerender("Brand");
+    expect(mocks.controls[0].options.Filename).toBe("sitrep-map-Brand");
   });
 
-  it.each([
-    ["de", "de"],
-    ["fr", "fr"],
-    ["it", "en"],
-    ["en", "en"],
-  ])("offers the export dialog in the language for %s", (language, expected) => {
-    i18next.language = language;
+  it("follows the incident in an open dialog while the user has not typed a name of their own", () => {
+    const view = render_("Brand");
+    const control = mocks.controls[0];
+    control.dialogState = { fileName: "sitrep-map-Brand" };
 
-    render(<ExportControl />);
+    view.rerender("Brand Nord");
+    expect(control.dialogState.fileName).toBe("sitrep-map-Brand-Nord");
 
-    expect(mocks.created[0]).toMatchObject({ Local: expected });
+    control.dialogState.fileName = "mein-name";
+    view.rerender("Brand Süd");
+    expect(control.dialogState.fileName).toBe("mein-name");
   });
 });
