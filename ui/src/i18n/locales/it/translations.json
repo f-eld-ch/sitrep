@@ -340,7 +340,7 @@
     "state": "Stato",
     "keeper": "Tenuta della carta",
     "hint": "L'intestazione si trova in alto a sinistra sulla mappa, per PDF, PNG, JPEG e WEBP.",
-    "unavailable": "Non possibile per l'esportazione vettoriale, SVG e GeoTIFF",
+    "unavailable": "Non possibile per l'esportazione vettoriale",
     "baseMapLabel": "Carta di base",
     "scaleLabel": "Scala",
     "organisation": "Organizzazione"

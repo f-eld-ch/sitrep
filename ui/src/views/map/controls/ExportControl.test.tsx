@@ -17,7 +17,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@watergis/maplibre-gl-export", () => ({
   Format: { PDF: "pdf", PNG: "png" },
   PageOrientation: { Landscape: "landscape" },
-  Size: { A3: "a3" },
+  Size: { LETTER: [279, 216], A2: [594, 420], A3: [420, 297], A4: [297, 210] },
   MaplibreExportControl: class {
     options: { Filename?: string };
     dialogState?: { fileName: string };
@@ -72,6 +72,7 @@ import ExportControl, {
   canHaveHeader,
   exportFileName,
   NORTH_ICON_SIZE_FRACTION,
+  PAGE_SIZES,
   SitrepExportControl,
   swissLocale,
 } from "./ExportControl";
@@ -288,6 +289,14 @@ describe("ExportControl header", () => {
     await exportMap(view.control(), settings());
 
     expect(mocks.draw.mock.calls[0][1].locale).toBe("fr-CH");
+  });
+
+  it("offers the page sizes of the library but Letter", () => {
+    const view = mount({ incident: "Brand" });
+
+    const options = (view.control() as unknown as { options: { AllowedSizes: string[] } }).options;
+    expect(options.AllowedSizes).toEqual(["A2", "A3", "A4"]);
+    expect(PAGE_SIZES).not.toContain("LETTER");
   });
 
   it("makes the north icon half the size the library starts with", () => {

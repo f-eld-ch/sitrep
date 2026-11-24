@@ -22,6 +22,7 @@ import {
   pageScale,
   scaleDenominator,
 } from "./exportHeader";
+import { hideFormats } from "./exportDialogFormats";
 import { addHeaderFields, type HeaderFieldOptions, type HeaderFields } from "./exportDialogHeader";
 import { MAX_HEADER_TEXT, useExportHeaderSettings } from "./ExportHeaderSettings";
 
@@ -51,6 +52,11 @@ export const swissLocale = (language: string | undefined): string => {
 };
 
 const FILE_NAME_PREFIX = "sitrep-map";
+
+/** The page sizes offered: those of the library, but Letter. */
+export const PAGE_SIZES = (Object.keys(Size) as (keyof typeof Size)[]).filter(
+  (name) => name !== "LETTER",
+);
 
 /** The width of the north icon as a fraction of the page's: the library's own default is 0.05. */
 export const NORTH_ICON_SIZE_FRACTION = 0.025;
@@ -201,6 +207,7 @@ export class SitrepExportControl extends MaplibreExportControl {
     // The dialog is in the page as soon as it is opened; if not yet, a frame later.
     const add = () => {
       const dialog = document.querySelector<HTMLElement>(".gl-export-dialog");
+      if (dialog) hideFormats(dialog);
       if (dialog && this.headerFields) {
         this.previewFields?.dispose();
         this.previewFields = addHeaderFields(dialog, {
@@ -273,6 +280,8 @@ function ExportControl(props: ExportControlProps): null {
       new SitrepExportControl({
         Filename: exportFileName(undefined),
         PageSize: Size.A3,
+        // Letter is a North American paper; the others are the sizes in use here.
+        AllowedSizes: PAGE_SIZES,
         PageOrientation: PageOrientation.Landscape,
         Format: Format.PDF,
         DPI: 300,

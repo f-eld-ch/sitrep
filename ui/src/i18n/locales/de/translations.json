@@ -340,7 +340,7 @@
     "state": "Stand",
     "keeper": "Kartenführung",
     "hint": "Der Kartenkopf steht oben links auf der Karte, bei PDF, PNG, JPEG und WEBP.",
-    "unavailable": "Nicht möglich für Vektor-Export, SVG und GeoTIFF",
+    "unavailable": "Nicht möglich für Vektor-Export",
     "baseMapLabel": "Basiskarte",
     "scaleLabel": "Massstab",
     "organisation": "Organisation"

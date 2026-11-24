@@ -340,7 +340,7 @@
     "state": "État",
     "keeper": "Tenue de la carte",
     "hint": "L'en-tête figure en haut à gauche de la carte, pour PDF, PNG, JPEG et WEBP.",
-    "unavailable": "Impossible pour l'export vectoriel, SVG et GeoTIFF",
+    "unavailable": "Impossible pour l'export vectoriel",
     "baseMapLabel": "Carte de base",
     "scaleLabel": "Échelle",
     "organisation": "Organisation"

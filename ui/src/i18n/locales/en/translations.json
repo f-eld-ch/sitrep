@@ -340,7 +340,7 @@
     "state": "As of",
     "keeper": "Map keeper",
     "hint": "The header is placed at the top left of the map, for PDF, PNG, JPEG and WEBP.",
-    "unavailable": "Not possible for vector export, SVG and GeoTIFF",
+    "unavailable": "Not possible for vector export",
     "baseMapLabel": "Base map",
     "scaleLabel": "Scale",
     "organisation": "Organisation"
