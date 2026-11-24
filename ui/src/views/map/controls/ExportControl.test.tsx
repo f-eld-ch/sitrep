@@ -54,7 +54,12 @@ vi.mock("./exportHeader", async (importOriginal) => ({
   drawExportHeader: mocks.draw,
 }));
 vi.mock("i18next", () => ({ default: { language: "de" } }));
-vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
+vi.mock("react-i18next", () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+    i18n: { resolvedLanguage: "fr", language: "fr" },
+  }),
+}));
 vi.mock("react-map-gl/maplibre", async () => {
   const { useMemo } = await import("react");
   return {
@@ -63,7 +68,13 @@ vi.mock("react-map-gl/maplibre", async () => {
   };
 });
 
-import ExportControl, { canHaveHeader, exportFileName, SitrepExportControl } from "./ExportControl";
+import ExportControl, {
+  canHaveHeader,
+  exportFileName,
+  NORTH_ICON_SIZE_FRACTION,
+  SitrepExportControl,
+  swissLocale,
+} from "./ExportControl";
 
 describe("exportFileName", () => {
   it.each([
@@ -85,6 +96,19 @@ describe("exportFileName", () => {
 
   it("keeps a very long name to a length a file can have", () => {
     expect(exportFileName("x".repeat(300)).length).toBeLessThanOrEqual("sitrep-map-".length + 80);
+  });
+});
+
+describe("swissLocale", () => {
+  it.each([
+    ["de", "de-CH"],
+    ["fr", "fr-CH"],
+    ["it-IT", "it-CH"],
+    ["en", "en-CH"],
+    ["rm", "de-CH"],
+    [undefined, "de-CH"],
+  ])("writes %s as %s", (language, expected) => {
+    expect(swissLocale(language)).toBe(expected);
   });
 });
 
@@ -256,6 +280,23 @@ describe("ExportControl header", () => {
     expect(header.text.mapType).toBe("exportHeader.commandMap");
     expect(mocks.pdfImage).toHaveBeenCalledTimes(1);
     expect(mocks.saved[0].name).toBe("sitrep-map-Brand.pdf");
+  });
+
+  it("writes the date and the time as in Switzerland, in the language of the interface", async () => {
+    const view = mount({ incident: "Brand" });
+
+    await exportMap(view.control(), settings());
+
+    expect(mocks.draw.mock.calls[0][1].locale).toBe("fr-CH");
+  });
+
+  it("makes the north icon half the size the library starts with", () => {
+    const view = mount({ incident: "Brand" });
+
+    const options = (view.control() as unknown as { options: { northIconOptions: object } })
+      .options;
+    expect(options.northIconOptions).toEqual({ imageSizeFraction: NORTH_ICON_SIZE_FRACTION });
+    expect(NORTH_ICON_SIZE_FRACTION).toBe(0.05 / 2);
   });
 
   it("uses the user name when there is no full name, and the Nachrichtenkarte without a title of its own", async () => {

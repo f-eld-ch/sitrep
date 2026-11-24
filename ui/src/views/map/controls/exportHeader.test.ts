@@ -7,6 +7,7 @@ import {
   headerRows,
   pageScale,
   scaleDenominator,
+  wrapText,
 } from "./exportHeader";
 
 const header = (over: Partial<ExportHeader> = {}): ExportHeader => ({
@@ -16,6 +17,7 @@ const header = (over: Partial<ExportHeader> = {}): ExportHeader => ({
   mapTitle: "Lage Nord",
   scale: 25000,
   state: new Date(2026, 10, 24, 9, 30),
+  locale: "de-CH",
   keeper: "Erika Muster",
   text: {
     classification: { intern: "Intern", vertraulich: "Vertraulich", geheim: "Geheim" },
@@ -61,8 +63,21 @@ describe("formatting", () => {
     expect(formatScale(500)).toBe("1:500");
   });
 
-  it("writes a time as the BABS examples do", () => {
-    expect(formatState(new Date(2026, 10, 24, 9, 5))).toBe("24.11.26 / 09h05");
+  it("writes the date and the time of a Swiss locale as 24.11.2026 / 09:28", () => {
+    const time = new Date(2026, 10, 24, 9, 28);
+
+    for (const locale of ["de-CH", "fr-CH", "it-CH", "en-CH"]) {
+      expect(formatState(time, locale)).toBe("24.11.2026 / 09:28");
+    }
+  });
+
+  it("keeps the time on a 24 hour clock, with the hour in two digits", () => {
+    expect(formatState(new Date(2026, 0, 5, 0, 5), "de-CH")).toBe("05.01.2026 / 00:05");
+    expect(formatState(new Date(2026, 0, 5, 21, 40), "de-CH")).toBe("05.01.2026 / 21:40");
+  });
+
+  it("follows another locale", () => {
+    expect(formatState(new Date(2026, 10, 24, 9, 28), "en-US")).toBe("11/24/2026 / 09:28");
   });
 });
 
@@ -75,7 +90,7 @@ describe("headerRows", () => {
       { kind: "span", text: "Führungskarte «Lage Nord»", size: 1.1, bold: true },
       { kind: "pair", label: "Basiskarte", value: "Landeskarte swisstopo" },
       { kind: "pair", label: "Massstab", value: "1:25 000" },
-      { kind: "pair", label: "Stand", value: "24.11.26 / 09h30" },
+      { kind: "pair", label: "Stand", value: "24.11.2026 / 09:30" },
       { kind: "pair", label: "Kartenführung", value: "Erika Muster" },
     ]);
   });
@@ -98,6 +113,41 @@ describe("pageScale", () => {
     // A3 is 420 mm wide: 1 587 pixels at 96 DPI, 4 961 at 300 DPI
     expect(pageScale(1587, 420)).toBeCloseTo(1, 2);
     expect(pageScale(4961, 420)).toBeCloseTo(300 / 96, 2);
+  });
+});
+
+describe("wrapText", () => {
+  // six pixels a letter
+  const ctx = { measureText: (text: string) => ({ width: text.length * 6 }) } as never;
+
+  it("breaks at the spaces", () => {
+    expect(wrapText(ctx, "Hochwasser Gemeinde Musterwil", 100, 3)).toEqual([
+      "Hochwasser",
+      "Gemeinde",
+      "Musterwil",
+    ]);
+    expect(wrapText(ctx, "Brand Altstadt", 100, 3)).toEqual(["Brand Altstadt"]);
+  });
+
+  it("breaks a word that is longer than a line", () => {
+    const lines = wrapText(ctx, "Hochwasserschutzverbandsversammlung", 60, 5);
+
+    expect(lines.length).toBeGreaterThan(1);
+    expect(lines.join("")).toBe("Hochwasserschutzverbandsversammlung");
+    expect(lines.every((l) => l.length * 6 <= 60)).toBe(true);
+  });
+
+  it("cuts what does not fit in the lines allowed, ending in an ellipsis", () => {
+    const lines = wrapText(ctx, "eins zwei drei vier fünf sechs sieben acht", 60, 2);
+
+    expect(lines).toHaveLength(2);
+    expect(lines[1].endsWith("…")).toBe(true);
+    expect(lines[1].length * 6).toBeLessThanOrEqual(60);
+  });
+
+  it("copes with an empty text and with a width smaller than a letter", () => {
+    expect(wrapText(ctx, "   ", 100, 3)).toEqual([]);
+    expect(() => wrapText(ctx, "abc", 2, 3)).not.toThrow();
   });
 });
 
@@ -150,7 +200,7 @@ describe("drawExportHeader", () => {
     expect(ctx.moveTo).toHaveBeenCalledTimes(7 + 4);
     expect(ctx.strokeRect).toHaveBeenCalledTimes(1);
     const texts = ctx.fillText.mock.calls.map((c) => c[0]);
-    expect(texts).toEqual(expect.arrayContaining(["Stand", "24.11.26 / 09h30", "Kartenführung"]));
+    expect(texts).toEqual(expect.arrayContaining(["Stand", "24.11.2026 / 09:30", "Kartenführung"]));
   });
 
   it("does not draw for a scale that is not usable", () => {
@@ -171,6 +221,51 @@ describe("drawExportHeader", () => {
     const share = (c: ReturnType<typeof fakeCanvas>, width: number) =>
       c.ctx.fillRect.mock.calls[0][2] / width;
     expect(share(high, 4961)).toBeCloseTo(share(low, 1587), 1);
+  });
+
+  it("lets a long event name run on in the lines below, inside the table", () => {
+    const { canvas, ctx } = fakeCanvas(1587);
+
+    drawExportHeader(
+      canvas,
+      header({ eventName: "Hochwasser Gemeinde Musterwil Oberdorf Süd" }),
+      1,
+    );
+
+    const drawn = ctx.fillText.mock.calls.map((c) => c[0] as string);
+    const name = drawn.filter((t) => "Hochwasser Gemeinde Musterwil Oberdorf Süd".includes(t));
+    expect(name.length).toBeGreaterThan(1);
+    expect(name.join(" ")).toBe("Hochwasser Gemeinde Musterwil Oberdorf Süd");
+    // and the table keeps to its width
+    expect(ctx.fillRect.mock.calls[0][2]).toBeLessThanOrEqual(1587 * 0.4);
+  });
+
+  it("does not make the table wider for a long event name", () => {
+    const short = fakeCanvas(1587);
+    const long = fakeCanvas(1587);
+
+    drawExportHeader(short.canvas, header({ eventName: "Brand" }), 1);
+    drawExportHeader(
+      long.canvas,
+      header({ eventName: "Hochwasser Gemeinde Musterwil Oberdorf Süd Unterdorf Nord" }),
+      1,
+    );
+
+    expect(long.ctx.fillRect.mock.calls[0][2]).toBe(short.ctx.fillRect.mock.calls[0][2]);
+  });
+
+  it("makes the row as tall as its lines", () => {
+    const short = fakeCanvas(1587);
+    const long = fakeCanvas(1587);
+
+    drawExportHeader(short.canvas, header({ eventName: "Brand" }), 1);
+    drawExportHeader(
+      long.canvas,
+      header({ eventName: "Hochwasser Gemeinde Musterwil Oberdorf Süd" }),
+      1,
+    );
+
+    expect(long.ctx.fillRect.mock.calls[0][3]).toBeGreaterThan(short.ctx.fillRect.mock.calls[0][3]);
   });
 
   it("cuts a line that is too long instead of running off the page", () => {

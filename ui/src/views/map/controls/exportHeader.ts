@@ -1,5 +1,3 @@
-import dayjs from "dayjs";
-
 /**
  * The header of an exported map, after the BABS "Beschriftungsnormen" for the Führungskarte and the
  * Nachrichtenkarte (Behelf Einsatz Lage): who the map is for, what it shows, at which scale and as
@@ -35,6 +33,8 @@ export interface ExportHeader {
   scale?: number;
   /** The time the map shows. */
   state: Date;
+  /** How dates and times are written, e.g. "de-CH": 24.11.2026 / 09:28. */
+  locale: string;
   /** The full name of the user keeping the map. */
   keeper: string;
   text: ExportHeaderText;
@@ -72,8 +72,24 @@ export const formatScale = (denominator: number): string =>
     .toString()
     .replace(/\B(?=(\d{3})+(?!\d))/g, "\u0020")}`;
 
-/** "24.11.26 / 09h30", as the BABS examples write a time. */
-export const formatState = (time: Date): string => dayjs(time).format("DD.MM.YY / HH[h]mm");
+/**
+ * The date and the time in the form of the locale, the date with the year in full and the time on
+ * a 24 hour clock: for the Swiss locales "24.11.2026 / 09:28".
+ */
+export function formatState(time: Date, locale: string): string {
+  const date = new Intl.DateTimeFormat(locale, {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(time);
+  const clock = new Intl.DateTimeFormat(locale, {
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).format(time);
+
+  return `${date} / ${clock}`;
+}
 
 /** A line of the table across its whole width, or a label with its value. */
 export type HeaderRow =
@@ -101,7 +117,7 @@ export function headerRows(header: ExportHeader): HeaderRow[] {
     ...span(header.mapTitle ? `${text.mapType} «${header.mapTitle}»` : text.mapType, 1.1, true),
     ...pair(text.baseMapLabel, text.baseMap),
     ...pair(text.scaleLabel, header.scale === undefined ? undefined : formatScale(header.scale)),
-    ...pair(text.state, formatState(header.state)),
+    ...pair(text.state, formatState(header.state, header.locale)),
     ...pair(text.keeper, header.keeper),
   ];
 }
@@ -109,16 +125,65 @@ export function headerRows(header: ExportHeader): HeaderRow[] {
 const BODY_SIZE = 12;
 const CELL_X = 7;
 const CELL_Y = 4;
+const LINE_HEIGHT = 1.15;
+/** The table is at least this wide, in pixels of a page at 96 DPI. */
+const MIN_WIDTH = 240;
 const FONT = "B612, sans-serif";
 
-/** Cuts a line to the width, ending in an ellipsis. */
-function fit(ctx: CanvasRenderingContext2D, text: string, width: number): string {
-  if (ctx.measureText(text).width <= width) return text;
+/** How many lines a text may take before it is cut short: the event name more than the rest. */
+const MAX_LINES_SPAN = 4;
+const MAX_LINES_VALUE = 2;
 
-  let end = text.length;
-  while (end > 1 && ctx.measureText(`${text.slice(0, end)}…`).width > width) end -= 1;
+/**
+ * Breaks a text into lines of at most `width`, at the spaces, and in the middle of a word that is
+ * longer than a line. What does not fit in `maxLines` ends the last line in an ellipsis.
+ */
+export function wrapText(
+  ctx: Pick<CanvasRenderingContext2D, "measureText">,
+  text: string,
+  width: number,
+  maxLines: number,
+): string[] {
+  const fits = (candidate: string) => ctx.measureText(candidate).width <= width;
+  const lines: string[] = [];
+  let line = "";
 
-  return `${text.slice(0, end)}…`;
+  const push = (value: string) => {
+    lines.push(value);
+    line = "";
+  };
+
+  for (const word of text.trim().split(/\s+/)) {
+    if (word === "") continue;
+
+    const attempt = line === "" ? word : `${line} ${word}`;
+    if (fits(attempt)) {
+      line = attempt;
+      continue;
+    }
+    if (line !== "") push(line);
+
+    // A word that does not fit a line of its own is broken where the line ends.
+    let rest = word;
+    while (!fits(rest)) {
+      let end = rest.length - 1;
+      while (end > 1 && !fits(rest.slice(0, end))) end -= 1;
+      push(rest.slice(0, Math.max(end, 1)));
+      rest = rest.slice(Math.max(end, 1));
+    }
+    line = rest;
+  }
+  if (line !== "") push(line);
+
+  if (lines.length <= maxLines) return lines;
+
+  // Too long: the lines that fit, the last one ending in an ellipsis.
+  const kept = lines.slice(0, maxLines);
+  let last = kept[maxLines - 1];
+  while (last.length > 1 && !fits(`${last}…`)) last = last.slice(0, -1);
+  kept[maxLines - 1] = `${last}…`;
+
+  return kept;
 }
 
 /** How many canvas pixels a pixel of the page at 96 DPI is, for a canvas of the whole page. */
@@ -127,7 +192,9 @@ export const pageScale = (canvasWidth: number, pageWidthMm: number): number =>
 
 /**
  * Draws the header as a table in the top left corner of the page: a white box with a frame, the
- * lines across its width on top, then the labelled rows in two columns, every row ruled off.
+ * lines across its width on top, then the labelled rows in two columns, every row ruled off. The
+ * table does not grow with a long event name: it runs on in the lines below, up to a few, before
+ * it is cut short.
  *
  * Sizes are in the pixels of a page at 96 DPI and scaled by `scale` (see `pageScale`), so the
  * table takes the same part of the sheet at any resolution. It is at most 40 % of the page wide.
@@ -154,20 +221,48 @@ export function drawExportHeader(
 
     return ctx.measureText(text).width;
   };
+  const pad = 2 * CELL_X * k;
 
-  // The label column is as wide as its widest label; the table as wide as its widest row.
+  // The label column is as wide as its widest label, the table as wide as its widest row, up to
+  // its limit.
   const labelWidth = Math.max(
     0,
     ...rows.flatMap((r) => (r.kind === "pair" ? [textWidth(r.label, 1)] : [])),
   );
+  const labelColumn = labelWidth + pad;
+  // The table is as wide as its labelled rows, the classification and the organisation need, and at
+  // least MIN_WIDTH. The event name and the map title are not: they run on in lines instead of
+  // making the table wider, however long they are.
   const rowWidth = (row: HeaderRow) =>
-    row.kind === "span"
-      ? textWidth(row.text, row.size, row.bold) + 2 * CELL_X * k
-      : labelWidth + textWidth(row.value, 1, true) + 4 * CELL_X * k;
-  const width = Math.min(Math.max(...rows.map(rowWidth)), maxWidth);
-  const labelColumn = labelWidth + 2 * CELL_X * k;
-  const rowHeight = (row: HeaderRow) => px(row.kind === "span" ? row.size : 1) + 2 * CELL_Y * k;
-  const height = rows.reduce((sum, row) => sum + rowHeight(row), 0);
+    row.kind === "pair"
+      ? labelColumn + textWidth(row.value, 1, true) + pad
+      : row.size <= 1
+        ? textWidth(row.text, row.size, row.bold) + pad
+        : 0;
+  const width = Math.min(Math.max(MIN_WIDTH * k, ...rows.map(rowWidth)), maxWidth);
+
+  // Every row's lines, once the width is known.
+  const laid = rows.map((row) => {
+    if (row.kind === "span") {
+      ctx.font = font(row.size, row.bold);
+
+      return {
+        row,
+        size: row.size,
+        lines: wrapText(ctx, row.text, width - pad, MAX_LINES_SPAN),
+      };
+    }
+    ctx.font = font(1, true);
+
+    return {
+      row,
+      size: 1,
+      lines: wrapText(ctx, row.value, width - labelColumn - pad, MAX_LINES_VALUE),
+    };
+  });
+  const heightOf = (item: (typeof laid)[number]) =>
+    px(item.size) * LINE_HEIGHT * item.lines.length + 2 * CELL_Y * k;
+  const height = laid.reduce((sum, item) => sum + heightOf(item), 0);
 
   const x0 = 12 * k;
   const y0 = 12 * k;
@@ -180,7 +275,8 @@ export function drawExportHeader(
   ctx.lineWidth = Math.max(1, k);
 
   let y = y0;
-  rows.forEach((row, index) => {
+  laid.forEach((item, index) => {
+    const { row } = item;
     if (index > 0) {
       ctx.beginPath();
       ctx.moveTo(x0, y);
@@ -188,29 +284,30 @@ export function drawExportHeader(
       ctx.stroke();
     }
 
+    const lineStep = px(item.size) * LINE_HEIGHT;
     if (row.kind === "span") {
       ctx.font = font(row.size, row.bold);
-      ctx.fillText(fit(ctx, row.text, width - 2 * CELL_X * k), x0 + CELL_X * k, y + CELL_Y * k);
+      item.lines.forEach((line, i) => {
+        ctx.fillText(line, x0 + CELL_X * k, y + CELL_Y * k + i * lineStep);
+      });
     } else {
       ctx.font = font(1);
       ctx.fillText(
-        fit(ctx, row.label, labelColumn - 2 * CELL_X * k),
+        wrapText(ctx, row.label, labelColumn - pad, 1)[0],
         x0 + CELL_X * k,
         y + CELL_Y * k,
       );
       ctx.font = font(1, true);
-      ctx.fillText(
-        fit(ctx, row.value, width - labelColumn - 2 * CELL_X * k),
-        x0 + labelColumn + CELL_X * k,
-        y + CELL_Y * k,
-      );
+      item.lines.forEach((line, i) => {
+        ctx.fillText(line, x0 + labelColumn + CELL_X * k, y + CELL_Y * k + i * lineStep);
+      });
       // the rule between the label and its value
       ctx.beginPath();
       ctx.moveTo(x0 + labelColumn, y);
-      ctx.lineTo(x0 + labelColumn, y + rowHeight(row));
+      ctx.lineTo(x0 + labelColumn, y + heightOf(item));
       ctx.stroke();
     }
-    y += rowHeight(row);
+    y += heightOf(item);
   });
 
   ctx.strokeRect(x0, y0, width, height);

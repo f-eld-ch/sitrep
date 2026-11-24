@@ -43,7 +43,17 @@ function getLanguage(): Language {
   }
 }
 
+/** The locale a date is written in: the language of the interface, as it is written in Switzerland. */
+export const swissLocale = (language: string | undefined): string => {
+  const base = (language ?? "").split(/[-_]/)[0];
+
+  return ["de", "fr", "it", "en"].includes(base) ? `${base}-CH` : "de-CH";
+};
+
 const FILE_NAME_PREFIX = "sitrep-map";
+
+/** The width of the north icon as a fraction of the page's: the library's own default is 0.05. */
+export const NORTH_ICON_SIZE_FRACTION = 0.025;
 
 /**
  * The name the export is offered under: `sitrep-map-<incident name>`, without anything a file
@@ -252,7 +262,7 @@ export class SitrepExportControl extends MaplibreExportControl {
 
 function ExportControl(props: ExportControlProps): null {
   const { position } = props;
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { state } = useContext(IncidentContext);
   const { state: user } = useContext(UserContext);
   const { state: layers } = useContext(LayerContext);
@@ -273,6 +283,8 @@ function ExportControl(props: ExportControlProps): null {
           visibility: "visible",
           position: "bottom-right",
         },
+        // Half the size the library starts with (5 % of the width of the page).
+        northIconOptions: { imageSizeFraction: NORTH_ICON_SIZE_FRACTION },
       }),
     { position: position },
   );
@@ -316,6 +328,7 @@ function ExportControl(props: ExportControlProps): null {
         mapTitle: !messageMap ? active?.name : undefined,
         scale: scaleDenominator(view),
         state: asOf ?? new Date(),
+        locale: swissLocale(i18n.resolvedLanguage ?? i18n.language),
         keeper: settings.keeper.trim() || user.name || user.username,
         text,
       };
