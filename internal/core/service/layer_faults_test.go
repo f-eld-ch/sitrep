@@ -27,7 +27,7 @@ func newLayerRig(t *testing.T) layerRig {
 	r := newIncidentRig(t)
 	rig := layerRig{incidentRig: r, svc: r.factory.LayerService(r.layers, r.incidents)}
 
-	res, err := r.svc.CreateIncident(ctx(), "Lagebild", nil, nil, nil, testActor)
+	res, err := r.svc.CreateIncident(ctx(), "Lagebild", nil, nil, []string{"Lage"}, testActor)
 	require.NoError(t, err)
 
 	rig.incidentID = res.IncidentID

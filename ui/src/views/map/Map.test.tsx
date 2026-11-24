@@ -547,7 +547,14 @@ describe("fetching the layers", () => {
   });
 
   it.each([
-    ["an operator", {}, "MESSAGE_MAP", "std"],
+    // the Lagebild opens on the Nachrichtenkarte, which is read-only there
+    ["an operator", {}, "MESSAGE_MAP", "map"],
+    [
+      "a map that prefers a standard layer",
+      { preferredLayerKind: "STANDARD" as const },
+      "std",
+      "std",
+    ],
     [
       "a map that prefers the message map",
       { preferredLayerKind: "MESSAGE_MAP" as const },
@@ -1016,7 +1023,7 @@ describe("drawing", () => {
 
     it("frames the drawings of the message map while the layer has nothing of its own", () => {
       setLayers(makeLayer("L1", {}, []), makeLayer("map", { kind: "MESSAGE_MAP" }, ["m1"]));
-      renderMap();
+      renderMap({ preferredLayerKind: "STANDARD" });
       expect(state().activeLayer).toBe("L1");
 
       expect(mocks.fakeMap.fitBounds).toHaveBeenCalledExactlyOnceWith(

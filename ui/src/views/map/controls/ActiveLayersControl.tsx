@@ -64,8 +64,10 @@ export function layerIcon(layer: Layer, isInherited: boolean, activeLayerId: str
 }
 
 /**
- * Whether a layer can be made the active one. The message map layer is only drawn on for a
- * message, and a message only draws on it; on the Nachrichtenkarte no other layer is ever active.
+ * Whether a layer can be made the active one. A message only draws on the message map layer, and
+ * on the Nachrichtenkarte no other layer is ever active. Outside of drawing for a message every
+ * layer can be picked, the message map layer too: it is then shown as it is, read-only, with the
+ * draw controls off, since it is only ever drawn on for a message.
  */
 export function canActivateLayer(
   layer: Layer,
@@ -73,8 +75,9 @@ export function canActivateLayer(
   messageMapOnly: boolean,
 ): boolean {
   if (messageMapOnly) return layer.kind === "MESSAGE_MAP" && drawingMessage;
+  if (drawingMessage) return layer.kind === "MESSAGE_MAP";
 
-  return (layer.kind === "MESSAGE_MAP") === drawingMessage;
+  return true;
 }
 
 export function hasOwnLayerGroup(groups: LayerGroup[]): boolean {
@@ -115,7 +118,10 @@ const ActiveLayersControl: React.FC = () => {
 
   const handleAddLayer = (name: string) => {
     if (name.trim() === "" || !incidentId) return;
-    void addLayer({ incidentId, name });
+    // The layer just made is the one to draw on: picked as soon as it exists.
+    void addLayer({ incidentId, name }).then(({ layerId }) => {
+      dispatch({ type: "SET_ACTIVE_LAYER", payload: { layerId } });
+    });
     setLayerName("");
     setShowAddLayer(false);
   };
@@ -210,18 +216,21 @@ const ActiveLayersControl: React.FC = () => {
                     >
                       <FontAwesomeIcon icon={s.isVisible ? faEye : faEyeSlash} />
                     </button>
-                    {!isInherited && canActivate(s.layer) && (
-                      <button
-                        className="leading-none transition-colors hover:text-primary"
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleLayerClick(s.layer);
-                        }}
-                      >
-                        <FontAwesomeIcon icon={faEdit} />
-                      </button>
-                    )}
+                    {/* The message map is picked to be looked at, never to be edited on its own. */}
+                    {!isInherited &&
+                      canActivate(s.layer) &&
+                      (s.layer.kind !== "MESSAGE_MAP" || drawingMessage !== undefined) && (
+                        <button
+                          className="leading-none transition-colors hover:text-primary"
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleLayerClick(s.layer);
+                          }}
+                        >
+                          <FontAwesomeIcon icon={faEdit} />
+                        </button>
+                      )}
                   </div>
                 )}
               </div>

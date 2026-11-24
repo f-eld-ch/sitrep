@@ -93,9 +93,14 @@ describe("canActivateLayer", () => {
   const standard = layerState("a", "inc-1", "One").layer;
   const messageMap: Layer = { ...standard, id: "m", kind: "MESSAGE_MAP" };
 
-  it("lets the free map activate every layer but the Nachrichtenkarte", () => {
+  it("lets the free map activate every layer, the Nachrichtenkarte too (read-only there)", () => {
     expect(canActivateLayer(standard, false, false)).toBe(true);
-    expect(canActivateLayer(messageMap, false, false)).toBe(false);
+    expect(canActivateLayer(messageMap, false, false)).toBe(true);
+  });
+
+  it("lets a message draw on the Nachrichtenkarte only", () => {
+    expect(canActivateLayer(standard, true, false)).toBe(false);
+    expect(canActivateLayer(messageMap, true, false)).toBe(true);
   });
 
   it("only lets the Nachrichtenkarte activate its own layer, and only for a message", () => {

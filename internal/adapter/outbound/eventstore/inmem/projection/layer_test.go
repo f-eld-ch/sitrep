@@ -84,8 +84,8 @@ func TestLayerHandler_LayerCreatedViaIncident(t *testing.T) {
 func TestLayerHandler_LayerCreatedExplicitly(t *testing.T) {
 	s := newLayerStack(t)
 
-	// CreateIncident always creates one default layer; add one more explicitly.
-	inc, err := s.incidentSvc().CreateIncident(ctx(), "Brand", nil, nil, nil, testActor)
+	// A layer asked for at creation, and one added afterwards.
+	inc, err := s.incidentSvc().CreateIncident(ctx(), "Brand", nil, nil, []string{"Lage"}, testActor)
 	require.NoError(t, err)
 
 	_, err = s.layerSvc().CreateLayer(ctx(), inc.IncidentID, "Sector A", testActor)
@@ -93,7 +93,7 @@ func TestLayerHandler_LayerCreatedExplicitly(t *testing.T) {
 	require.NoError(t, s.proj.CatchUp(ctx()))
 
 	rows := s.userLayers(uuid.UUID(inc.IncidentID))
-	assert.Len(t, rows, 2, "default layer + explicitly created layer")
+	assert.Len(t, rows, 2, "layer asked for at creation + explicitly created layer")
 
 	names := make([]string, len(rows))
 	for i, r := range rows {
@@ -103,11 +103,22 @@ func TestLayerHandler_LayerCreatedExplicitly(t *testing.T) {
 	assert.Contains(t, names, "Sector A")
 }
 
+func TestLayerHandler_NewIncidentHasNoUserLayer(t *testing.T) {
+	s := newLayerStack(t)
+
+	// A new incident starts with the message map only: any other layer is created on request.
+	inc, err := s.incidentSvc().CreateIncident(ctx(), "Leer", nil, nil, nil, testActor)
+	require.NoError(t, err)
+	require.NoError(t, s.proj.CatchUp(ctx()))
+
+	assert.Empty(t, s.userLayers(uuid.UUID(inc.IncidentID)))
+}
+
 func TestLayerHandler_MultipleLayersForIncident(t *testing.T) {
 	s := newLayerStack(t)
 
-	// CreateIncident creates one default layer; add two more explicitly → 3 total.
-	inc, err := s.incidentSvc().CreateIncident(ctx(), "Multi-Layer", nil, nil, nil, testActor)
+	// One layer asked for at creation, two more added afterwards → 3 total.
+	inc, err := s.incidentSvc().CreateIncident(ctx(), "Multi-Layer", nil, nil, []string{"Lage"}, testActor)
 	require.NoError(t, err)
 
 	_, err = s.layerSvc().CreateLayer(ctx(), inc.IncidentID, "Alpha", testActor)
