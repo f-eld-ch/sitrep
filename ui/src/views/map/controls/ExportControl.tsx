@@ -36,17 +36,10 @@ function ExportControl(props: ExportControlProps): null {
         PageOrientation: PageOrientation.Landscape,
         Format: Format.PDF,
         DPI: 300,
-        Crosshair: false,
-        PrintableArea: true,
         Local: getLanguage(),
+        // The attribution is taken from the map's own control, which already carries the
+        // swisstopo text, and is drawn bottom right.
         attributionOptions: {
-          style: {
-            textSize: 16,
-            textHaloColor: "#FFFFFF",
-            textHaloWidth: 0.8,
-            textColor: "#000000",
-            fallbackTextFont: ["B612 Mono"],
-          },
           visibility: "visible",
           position: "bottom-right",
         },
