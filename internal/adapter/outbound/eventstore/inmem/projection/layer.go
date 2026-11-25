@@ -98,7 +98,7 @@ func NewLayerFeaturesHandler() *LayerFeaturesHandler {
 }
 
 func (h *LayerFeaturesHandler) Name() string { return "readmodel.layer_features" }
-func (h *LayerFeaturesHandler) Version() int { return 5 }
+func (h *LayerFeaturesHandler) Version() int { return 6 }
 
 func (h *LayerFeaturesHandler) Reset(_ context.Context) error {
 	h.mu.Lock()
@@ -119,7 +119,7 @@ func (h *LayerFeaturesHandler) Handles(st, t string) bool {
 		}
 	case "Feature":
 		switch t {
-		case "Placed", "Moved", "Restyled", "Imported", "Removed", "Restored":
+		case "Placed", "Backdated", "Moved", "Restyled", "Imported", "Removed", "Restored":
 			return true
 		}
 	}
@@ -333,6 +333,17 @@ func (h *LayerFeaturesHandler) recordFeatureChange(e eventsourcing.Event) (bool,
 	c, ok, err := featurechange.Decode(e)
 	if err != nil || !ok {
 		return false, err
+	}
+
+	// A backdating moves the placement back; it is not a change of its own.
+	if c.Kind == featurechange.Backdated {
+		for _, r := range h.changes {
+			if r.FeatureID == e.StreamID && r.Kind == string(featurechange.Placed) {
+				r.EffectiveAt = c.EffectiveAt
+			}
+		}
+
+		return false, nil
 	}
 
 	var latest *time.Time

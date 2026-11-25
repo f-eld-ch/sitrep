@@ -192,7 +192,7 @@
     },
     "changeTime": {
       "label": "Gültig ab",
-      "hint": "Die Änderung gilt ab diesem Zeitpunkt auf dem Zeitstrahl."
+      "hint": "Die Änderung gilt ab diesem Zeitpunkt auf dem Zeitstrahl. Liegt er vor dem Einzeichnen, beginnt das Objekt schon dann."
     },
     "selectionRing": "Ausgewähltes Objekt hervorheben",
     "pending": {

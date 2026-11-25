@@ -364,7 +364,7 @@ func TestFeatureService_ModifyFeature_Failures(t *testing.T) {
 		require.ErrorIs(t, err, shared.ErrNotFound)
 	})
 
-	t.Run("a change before the feature was placed", func(t *testing.T) {
+	t.Run("a change before the feature was placed moves its placement back", func(t *testing.T) {
 		before := testAt.Add(-time.Hour)
 		placedAt := testAt
 
@@ -372,7 +372,7 @@ func TestFeatureService_ModifyFeature_Failures(t *testing.T) {
 			testGeometry, testProperties, inbound.FeatureChange{EffectiveAt: &placedAt}, testActor)
 		require.NoError(t, err)
 
-		_, err = r.svc.ModifyFeature(
+		got, err := r.svc.ModifyFeature(
 			ctx(),
 			state.ID,
 			testGeometry,
@@ -380,7 +380,8 @@ func TestFeatureService_ModifyFeature_Failures(t *testing.T) {
 			inbound.FeatureChange{EffectiveAt: &before},
 			testActor,
 		)
-		require.ErrorIs(t, err, shared.ErrBeforeFeaturePlaced)
+		require.NoError(t, err)
+		assert.Equal(t, before, got.PlacedAt)
 	})
 
 	t.Run("only the geometry or only the properties", func(t *testing.T) {

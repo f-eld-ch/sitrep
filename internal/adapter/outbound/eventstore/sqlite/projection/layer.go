@@ -31,7 +31,7 @@ func NewLayerFeaturesHandler(db *sql.DB) *LayerFeaturesHandler {
 }
 
 func (h *LayerFeaturesHandler) Name() string { return "readmodel.layer_features" }
-func (h *LayerFeaturesHandler) Version() int { return 5 }
+func (h *LayerFeaturesHandler) Version() int { return 6 }
 func (h *LayerFeaturesHandler) Reset(ctx context.Context) error {
 	if _, err := h.db.ExecContext(ctx, `DELETE FROM readmodel_feature_change`); err != nil {
 		return err
@@ -51,7 +51,7 @@ func (h *LayerFeaturesHandler) Handles(st, t string) bool {
 		}
 	case "Feature":
 		switch t {
-		case "Placed", "Moved", "Restyled", "Imported", "Removed", "Restored":
+		case "Placed", "Backdated", "Moved", "Restyled", "Imported", "Removed", "Restored":
 			return true
 		}
 	}
@@ -414,6 +414,18 @@ func recordFeatureChange(ctx context.Context, tx *sql.Tx, e eventsourcing.Event)
 	}
 
 	featureID := e.StreamID.String()
+
+	// A backdating moves the placement back; it is not a change of its own. Setting the time is
+	// idempotent, and the feature's other changes are all later than the placement it replaces.
+	if c.Kind == featurechange.Backdated {
+		_, err := tx.ExecContext(ctx, `
+			UPDATE readmodel_feature_change SET effective_at = ?
+			WHERE feature_id = ? AND change = 'placed'`,
+			c.EffectiveAt.UTC().Format(sqlitehelpers.TimeLayout), featureID)
+
+		return false, err
+	}
+
 	incidentID, layerID := c.IncidentID, c.LayerID
 
 	if c.Kind != featurechange.Placed {

@@ -20,11 +20,13 @@ import (
 type Kind string
 
 const (
-	Placed   Kind = "placed"
-	Moved    Kind = "moved"
-	Restyled Kind = "restyled"
-	Removed  Kind = "removed"
-	Restored Kind = "restored"
+	Placed Kind = "placed"
+	// Backdated is not a change of its own: it moves the placed change back in time.
+	Backdated Kind = "backdated"
+	Moved     Kind = "moved"
+	Restyled  Kind = "restyled"
+	Removed   Kind = "removed"
+	Restored  Kind = "restored"
 )
 
 // Change is one feature event in projection form.
@@ -59,6 +61,8 @@ func Decode(e eventsourcing.Event) (c Change, ok bool, err error) {
 	switch e.EventType {
 	case "Placed", "Imported":
 		c.Kind = Placed
+	case "Backdated":
+		c.Kind = Backdated
 	case "Moved":
 		c.Kind = Moved
 	case "Restyled":
@@ -111,7 +115,7 @@ func (c Change) GuardKinds() []Kind {
 		return []Kind{Placed, Moved, Restored}
 	case Restyled:
 		return []Kind{Placed, Restyled, Restored}
-	case Placed, Removed, Restored:
+	case Placed, Backdated, Removed, Restored:
 		return nil
 	}
 

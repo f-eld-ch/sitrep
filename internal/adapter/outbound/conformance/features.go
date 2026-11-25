@@ -123,6 +123,50 @@ func RunFeatureChanges(t *testing.T, f Factory) {
 		assert.Equal(t, point(10.0), currentGeometry(t, b, incID, featureID))
 	})
 
+	t.Run("BackdatedBeforeItsPlacement", func(t *testing.T) {
+		b := f(t)
+		ctx := t.Context()
+		drawn := time.Date(2026, 1, 15, 18, 0, 0, 0, time.UTC)
+		t1400 := time.Date(2026, 1, 15, 14, 0, 0, 0, time.UTC)
+		t1300 := t1400.Add(-time.Hour)
+
+		incID, layerID := setup(t, b, drawn)
+		featureID := feature.DeriveID(incID, "draw-1")
+
+		ft := feature.New(featureID)
+		require.NoError(t, ft.Place(incID, layerID, point(8.0), map[string]any{"label": "A"},
+			feature.ChangeContext{EffectiveAt: t1400}, "sys", drawn))
+		// A change dated before the placement moves the placement back to it.
+		require.NoError(t, ft.Restyle(map[string]any{"label": "B"},
+			feature.ChangeContext{EffectiveAt: t1300}, "sys", drawn))
+
+		require.NoError(t, b.Transactor.WithinTx(ctx, func(ctx context.Context) error {
+			_, err := b.Store.Append(ctx, ft)
+			return err
+		}))
+		require.NoError(t, b.Project(ctx))
+
+		assertHistory := func(t *testing.T) {
+			t.Helper()
+
+			changes, err := b.Queries.ListFeatureChanges(ctx, uuid.UUID(incID))
+			require.NoError(t, err)
+			// The backdating is not a change of its own: the placement is there, earlier.
+			require.Len(t, changes, 2)
+			assert.Equal(t, []string{"placed", "restyled"}, []string{changes[0].Change, changes[1].Change})
+			assert.Equal(t, t1300, changes[0].EffectiveAt.UTC())
+			assert.Equal(t, t1300, changes[1].EffectiveAt.UTC())
+		}
+
+		assertHistory(t)
+
+		if b.ResetProjections != nil {
+			require.NoError(t, b.ResetProjections(ctx))
+			require.NoError(t, b.Project(ctx))
+			assertHistory(t)
+		}
+	})
+
 	t.Run("ProjectionIsIdempotentOnReplay", func(t *testing.T) {
 		b := f(t)
 		if b.ResetProjections == nil {

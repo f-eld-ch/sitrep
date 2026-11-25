@@ -68,7 +68,7 @@ func DeriveID(incidentID shared.IncidentID, clientKey string) shared.FeatureID {
 func New(id shared.FeatureID) *Feature {
 	f := &Feature{}
 	f.root.SetID(uuid.UUID(id))
-	eventsourcing.Register(f, Placed{}, Moved{}, Restyled{}, Removed{}, Restored{}, Imported{})
+	eventsourcing.Register(f, Placed{}, Backdated{}, Moved{}, Restyled{}, Removed{}, Restored{}, Imported{})
 
 	return f
 }
@@ -110,7 +110,7 @@ func (f *Feature) Place(
 }
 
 func (f *Feature) Move(geometry map[string]any, change ChangeContext, actor string, at time.Time) error {
-	if err := f.requireChangeAllowed(change.effective(at)); err != nil {
+	if err := f.allowChange(change, actor, at); err != nil {
 		return err
 	}
 
@@ -124,7 +124,7 @@ func (f *Feature) Move(geometry map[string]any, change ChangeContext, actor stri
 }
 
 func (f *Feature) Restyle(properties map[string]any, change ChangeContext, actor string, at time.Time) error {
-	if err := f.requireChangeAllowed(change.effective(at)); err != nil {
+	if err := f.allowChange(change, actor, at); err != nil {
 		return err
 	}
 
@@ -181,6 +181,18 @@ func (f *Feature) Restore(change ChangeContext, actor string, at time.Time) erro
 	return nil
 }
 
+// allowChange checks that a change may take effect at its time. A change dated before the feature
+// was placed moves the placement back to that time, so the feature is there from then on; not for a
+// feature drawn for a message, whose time is the message's.
+func (f *Feature) allowChange(change ChangeContext, actor string, at time.Time) error {
+	eff := change.effective(at)
+	if !f.removed && eff.Before(f.placedAt) && len(f.messageIDs) == 0 {
+		eventsourcing.TrackChange(f, Backdated{EffectiveAt: &eff}, at, meta(actor))
+	}
+
+	return f.requireChangeAllowed(eff)
+}
+
 func (f *Feature) requireChangeAllowed(effective time.Time) error {
 	if f.removed {
 		return shared.ErrNotFound
@@ -203,6 +215,18 @@ func (f *Feature) Transition(e eventsourcing.Event) error {
 		f.properties = d.Properties
 		f.placedAt, f.geometryAt, f.propertiesAt = eff, eff, eff
 		f.linkMessage(d.MessageID)
+	case Backdated:
+		eff := effectiveTime(d.EffectiveAt, e.OccurredAt)
+		// What was never changed since the placement starts with it.
+		if f.geometryAt.Equal(f.placedAt) {
+			f.geometryAt = eff
+		}
+
+		if f.propertiesAt.Equal(f.placedAt) {
+			f.propertiesAt = eff
+		}
+
+		f.placedAt = eff
 	case Moved:
 		// Ties go to the later-recorded event; strictly older changes are history only.
 		if eff := effectiveTime(d.EffectiveAt, e.OccurredAt); !eff.Before(f.geometryAt) {
