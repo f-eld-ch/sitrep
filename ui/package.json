@@ -97,7 +97,7 @@
     "@types/react-dom": "^19.3.0",
     "@vite-pwa/assets-generator": "^2.0.0",
     "@vitejs/plugin-react": "^6.3.0",
-    "@vitest/coverage-v8": "^5.1.1",
+    "@vitest/coverage-v8": "^5.1.2",
     "git-rev-sync": "^3.0.2",
     "jsdom": "^31.0.1",
     "oxfmt": "^0.80.0",
