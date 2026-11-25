@@ -79,6 +79,20 @@ describe("useMapLoaded", () => {
     expect(result.current).toBe(true);
   });
 
+  it("turns true when the map settles, for a component mounted after the map's load event", () => {
+    // tiles are in flight: loaded() is false, and `load` has fired before and will not again
+    const { map, listeners, setLoaded } = fakeMap(false);
+
+    const { result } = renderHook(() => useMapLoaded(map));
+    expect(result.current).toBe(false);
+    expect(listeners.has("idle")).toBe(true);
+
+    setLoaded(true);
+    act(() => listeners.get("idle")?.());
+
+    expect(result.current).toBe(true);
+  });
+
   it("stops listening when it is unmounted before the map loaded", () => {
     const { map, listeners } = fakeMap(false);
 
@@ -86,5 +100,6 @@ describe("useMapLoaded", () => {
     unmount();
 
     expect(listeners.has("load")).toBe(false);
+    expect(listeners.has("idle")).toBe(false);
   });
 });
