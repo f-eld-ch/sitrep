@@ -56,7 +56,7 @@ and can be exported for printing.
 - [demo.sitrep.ch](https://demo.sitrep.ch) always runs the latest SitRep release. Its data is cleaned
   periodically and potentially visible to everyone, so don't use it to run a real incident. Log in with your
   GitHub account or sign up for a new account.
-- [dev.sitrep.ch](https://dev.sitrep.ch) runs the current state of the `develop` branch.
+- dev.sitrep.ch runs the current state of the `develop` branch. It is not publicly available: only selected users can log in.
 
 ## Feedback and feature requests
 
