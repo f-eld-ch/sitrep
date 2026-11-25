@@ -1,3 +1,10 @@
+## [26.11.7](https://github.com/f-eld-ch/sitrep/compare/v26.11.6..v26.11.7) - 2026-11-25
+
+### 🐛 Bug Fixes
+
+- *(map)* Show the time a saved feature was placed at in the time field ([#2187](https://github.com/f-eld-ch/sitrep/issues/2187)) - ([9a9ccfd](https://github.com/f-eld-ch/sitrep/commit/9a9ccfd747f822185bbc00820634c51c05b2df68))
+
+
 ## [26.11.6](https://github.com/f-eld-ch/sitrep/compare/v26.11.5..v26.11.6) - 2026-11-25
 
 ### ⛰️  Features
