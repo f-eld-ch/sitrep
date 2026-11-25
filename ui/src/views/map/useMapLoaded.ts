@@ -2,7 +2,12 @@ import { useEffect, useState } from "react";
 import type { MapRef } from "react-map-gl/maplibre";
 
 /**
- * Whether the map has finished its first load (style and the first tiles).
+ * Whether the map has finished loading (style and tiles).
+ *
+ * A component that mounts after the map's one and only `load` event (the draw controls are only
+ * there while a layer can be drawn on) finds `map.loaded()` false whenever tiles are in flight, and
+ * would wait for a `load` that never comes again. `idle` fires each time the map has settled, so
+ * it is waited for as well.
  *
  * `map.loaded` is a method: testing it for truthiness is always true once the map exists. And
  * calling it in an effect is not enough either, as the effect then never runs again when the map
@@ -25,9 +30,11 @@ export function useMapLoaded(map: MapRef | undefined): boolean {
 
     const onLoad = () => setLoaded(true);
     map.once("load", onLoad);
+    map.once("idle", onLoad);
 
     return () => {
       map.off("load", onLoad);
+      map.off("idle", onLoad);
     };
   }, [map, loaded]);
 
