@@ -11,7 +11,7 @@ Authorization in SitRep has two independent scopes:
 - **Global roles** control who can administrate the system (manage groups, promote other admins).
 - **Incident roles** control who can see and act on a specific incident.
 
-Both are event-sourced: every grant and revocation is a domain event stored in the event log. The access projection materialises those events into flat `readmodel.access_*` tables, and a Casbin enforcer evaluates incoming requests against those tables.
+Both are event-sourced: every grant and revocation is a domain event stored in the event log. The access projection materialises those events into flat `readmodel.access_*` tables (`readmodel_access_*` on SQLite), and a Casbin enforcer evaluates incoming requests against those tables.
 
 ---
 
@@ -100,7 +100,7 @@ The last active `system_admin` cannot be revoked. This is enforced in the `Globa
 
 ### Bootstrap
 
-On first startup with an empty database, SitRep bootstraps the first authenticated user as `system_admin` under a database advisory lock, provided no users exist yet. On an existing deployment the CLI command `sitrep admin grant-system-admin <sub>` must be used to promote the first admin.
+The first authenticated user to log in to a deployment with no users becomes `system_admin` (`AccessService.BootstrapFirstSystemAdmin`, called from the OIDC login flow). The check runs under the `AccessGuard` so two simultaneous first logins cannot both win. On an existing deployment the CLI command `sitrep admin grant-system-admin <sub>` must be used to promote the first admin.
 
 ---
 
@@ -172,7 +172,7 @@ Some invariants span multiple event streams:
 - A group cannot be archived while it has active incident grants.
 - A group-membership change affects all incidents that grant that group.
 
-These checks require reading across streams, which optimistic concurrency alone cannot protect. The `outbound.AccessGuard` port serialises them with an advisory lock in PostgreSQL and a mutex in the in-memory adapter. The service acquires the guard before reading cross-stream state and releases it after saving.
+These checks require reading across streams, which optimistic concurrency alone cannot protect. The `outbound.AccessGuard` port serialises them with an advisory lock in PostgreSQL and a mutex in the SQLite and in-memory adapters. The service acquires the guard before reading cross-stream state and releases it after saving.
 
 ---
 
@@ -203,8 +203,8 @@ The in-memory `AccessHandler` exposes `Policies()`, `Mode()`, `IncidentGrants()`
 ## Adding a New Permission
 
 1. Add the `Action` constant to `internal/core/domain/access/access.go`.
-2. Add it to the relevant role's slice in `incidentActions()` in the `AccessHandler` (`inmem/projection/access.go`). Mirror the change in the postgres `AccessHandler` (`postgres/projection/access.go`).
-3. Increment `AccessHandler.Version()` in both handlers to trigger a projection rebuild on next deploy.
+2. Add it to the relevant role's slice in `incidentActions()` in the in-memory `AccessHandler` (`inmem/projection/access.go`). Mirror the change in the SQL role-to-action tables of the `postgres/projection/access.go` and `sqlite/projection/access.go` handlers.
+3. Increment `AccessHandler.Version()` in all three handlers to trigger a projection rebuild on next deploy.
 4. Add the guard call in the service method that requires the new permission.
 5. Add a test asserting the new action is allowed/denied for each role.
 
@@ -219,10 +219,13 @@ The in-memory `AccessHandler` exposes `Policies()`, `Mode()`, `IncidentGrants()`
 | Access service (`GrantRole`, `RevokeRole`, `ChangeMode`, `CreateGroup`, …) | `internal/core/service/access.go` |
 | In-memory projection handler | `internal/adapter/outbound/eventstore/inmem/projection/access.go` |
 | Postgres projection handler | `internal/adapter/outbound/eventstore/postgres/projection/access.go` |
+| SQLite projection handler | `internal/adapter/outbound/eventstore/sqlite/projection/access.go` |
 | In-memory access checker | `internal/adapter/outbound/eventstore/inmem/access_checker.go` |
 | Postgres access checker | `internal/adapter/outbound/eventstore/postgres/access_checker.go` |
+| SQLite access checker | `internal/adapter/outbound/eventstore/sqlite/access_checker.go` |
 | In-memory read-model queries | `internal/adapter/outbound/queries/inmem/access.go` |
 | Postgres read-model queries | `internal/adapter/outbound/queries/postgres/queries.go` |
+| SQLite read-model queries | `internal/adapter/outbound/queries/sqlite/access.go` |
 | GraphQL resolvers | `internal/adapter/inbound/graphql/schema.resolvers.go`, `access_helpers.go` |
 | Frontend access UI | `ui/src/views/incident/Access.tsx` |
 | Frontend admin UI | `ui/src/views/admin/` |

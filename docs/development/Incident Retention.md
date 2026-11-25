@@ -1,7 +1,7 @@
 # Incident Retention
 
 Incident retention keeps the live event store and read models focused on active operational data.
-It is available only when SitRep uses the Postgres stack.
+It is available on the PostgreSQL and SQLite stacks; the in-memory stack used by tests does not run it.
 
 ## Tutorial: Enable Retention Locally
 
@@ -24,7 +24,7 @@ It is available only when SitRep uses the Postgres stack.
    go run . serve --config config.yaml
    ```
 
-After the projector completes its initial catch-up, its elected leader runs retention once. It
+After the projector completes its initial catch-up, it runs retention once (on PostgreSQL only the elected projector leader does; SQLite has a single process and no election). It
 runs again every hour. Logs include the candidate counts, cutoffs, closed incident IDs, archived
 incident IDs, and archive event/stream counts.
 
@@ -69,7 +69,7 @@ Look for these structured log messages:
 - `retention archived incidents, rebuilding read models`
 
 An archive failure makes the projector step down. Correct the underlying issue, such as a pending
-migration, then restart the server or wait for a standby projector to become leader.
+migration, then restart the server or, on PostgreSQL, wait for a standby projector to become leader.
 
 ## Reference
 
@@ -91,7 +91,7 @@ When archival is enabled, manually deleted incidents are archived seven days aft
 
 ### Archive storage
 
-Archival writes to these tables in the same Postgres database:
+Archival writes to these tables in the same database (PostgreSQL tables live in the `eventsourcing` schema; SQLite uses the same names with an underscore instead of the dot, for example `eventsourcing_archive_events`):
 
 | Table | Contents |
 | --- | --- |
@@ -113,9 +113,8 @@ directly after its fixed seven-day delay without appending a second delete event
 
 ### Why the worker runs with the projector
 
-Retention runs only in the Postgres projector leader, protected by the existing advisory lock.
-This prevents multiple server replicas from closing or archiving the same incident concurrently.
-When an archive removes live events, the same leader resets every read-model handler and replays
+Retention runs inside the projector. On PostgreSQL only the projector leader runs it, protected by the existing advisory lock, which prevents multiple server replicas from closing or archiving the same incident concurrently. On SQLite there is exactly one server process, so no election is needed.
+When an archive removes live events, the same projector resets every read-model handler and replays
 the remaining live event log. Archived streams are therefore absent from rebuilt read models.
 
 ### Boundaries and recovery

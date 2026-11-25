@@ -41,8 +41,9 @@ The sitrep backend is a Go application built around three interlocking principle
                      │ implemented by
 ┌────────────────────▼────────────────────────────────────┐
 │                  Outbound Adapters                       │
-│   Postgres event store  ·  Projector  ·  Read-model      │
-│   queries  ·  User repository  ·  In-memory (tests)      │
+│   Postgres + SQLite event stores  ·  Projectors          │
+│   Read-model queries  ·  User repository                 │
+│   In-memory stack (tests)                                │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -59,11 +60,16 @@ The sitrep backend is a Go application built around three interlocking principle
 | Outbound adapter — generic repositories | `internal/adapter/outbound/eventstore` |
 | Outbound adapter — Postgres event store | `internal/adapter/outbound/eventstore/postgres` |
 | Outbound adapter — Postgres projector | `internal/adapter/outbound/eventstore/postgres/projection` |
+| Outbound adapter — SQLite event store | `internal/adapter/outbound/eventstore/sqlite` |
+| Outbound adapter — SQLite projector | `internal/adapter/outbound/eventstore/sqlite/projection` |
 | Outbound adapter — in-memory event store | `internal/adapter/outbound/eventstore/inmem` |
 | Outbound adapter — in-memory projector | `internal/adapter/outbound/eventstore/inmem/projection` |
 | Outbound adapter — Postgres read-model queries | `internal/adapter/outbound/queries/postgres` |
+| Outbound adapter — SQLite read-model queries | `internal/adapter/outbound/queries/sqlite` |
 | Outbound adapter — in-memory read-model queries | `internal/adapter/outbound/queries/inmem` |
 | Outbound adapter — Postgres user repository | `internal/adapter/outbound/user/postgres` |
+| Outbound adapter — SQLite user repository | `internal/adapter/outbound/user/sqlite` |
+| Database migrations | `migrations/postgres`, `migrations/sqlite` (kept in sync, see [Migrations](GettingStarted.md#migrations)) |
 | Identity bridge | `internal/platform/identity` |
 | HTTP server & auth | `server/` |
 | CLI & composition root | `internal/cli` |
@@ -330,6 +336,7 @@ type Resolver struct {
 | Backend | Package |
 |---|---|
 | PostgreSQL | `internal/adapter/outbound/queries/postgres` — queries `readmodel.*` tables via SQL |
+| SQLite | `internal/adapter/outbound/queries/sqlite` — queries the `readmodel_*` tables via SQL |
 | In-memory | `internal/adapter/outbound/queries/inmem` — reads from the in-memory projection handlers |
 
 ### Projector ↔ Queries synchronisation
@@ -356,6 +363,10 @@ The projector runs asynchronously. A `Queries` call issued in the same HTTP requ
 **PostgreSQL**
 
 Both the projector and the queries implementation hold a `*pgxpool.Pool` pointed at the same database. Synchronisation is entirely implicit: the projector commits a transaction, the `readmodel.*` rows become visible, and the next SQL query from `Queries` reads them. No shared Go state; no explicit coordination needed.
+
+**SQLite**
+
+The same implicit model as PostgreSQL: the projector writes the `readmodel_*` tables in its own transaction and the queries implementation reads them through a separate read handle (WAL mode lets readers proceed while a write is in flight).
 
 **In-memory**
 
@@ -417,7 +428,7 @@ A `Reset(ctx)` method clears all handler state and replays from the beginning �
 
 #### Event store
 
-Events are stored in `eventsourcing.events` — a single append-only table inside a dedicated schema. One row per event. The schema is managed by goose migrations (`migrations/00002_eventsourcing.sql`).
+Events are stored in `eventsourcing.events` — a single append-only table inside a dedicated schema. One row per event. The schema is managed by goose migrations (`migrations/postgres/00002_eventsourcing.sql`).
 
 **Table: `eventsourcing.events`**
 
@@ -507,11 +518,44 @@ Each `h.Apply` call runs inside its own database transaction so a handler failur
 | `readmodel.global_access` | `AccessHandler` | One row per (subject, role) system-level grant |
 | `readmodel.access_policy` | `AccessHandler` | Flattened (subject, domain, object, action) tuples for Casbin enforcement; rebuilt on every access event |
 
-### SQLite (planned)
+### SQLite (`sqlite`)
 
-**Event store:** Same schema shape as PostgreSQL — one append-only events table with stream type, stream ID, version, payload, and timestamps. The unique constraint on `(stream_type, stream_id, version)` provides the same optimistic concurrency guarantee.
+`internal/adapter/outbound/eventstore/sqlite`
 
-**Projector:** The database notification mechanism would be replaced with an in-process channel signalled directly by the event store after each append. Checkpoint and dead-letter state would be stored in dedicated SQLite tables. No changes to the projector port interface or handler implementations would be required.
+An embedded, single-process backend for single-machine deployments and for local development without
+Docker. It is selected when `database-url` is a SQLite DSN (`sqlite://…`, `file:…`, or a `.db` /
+`.sqlite` / `.sqlite3` path, see `migrations.IsSQLiteDSN`) and wired by `buildSQLiteStack` in
+`internal/cli/stack.go`. The package documentation in `doc.go` is the authoritative description of the
+concurrency model; the essentials are:
+
+**Event store:** The same shape as PostgreSQL: one append-only `eventsourcing_events` table with a
+unique constraint on `(stream_type, stream_id, version)` for optimistic concurrency. There are no schemas, so
+tables are prefixed (`eventsourcing_*`, `readmodel_*`). The `seq` column uses `AUTOINCREMENT` so that
+sequence numbers are never reused after retention deletes events; reused numbers would land behind the
+projector checkpoint and those events would never be projected.
+
+**Single writer:** SQLite allows one write transaction at a time. The writer handle is opened with
+`SetMaxOpenConns(1)`, which is load-bearing: it is what serialises write transactions, so commit order
+equals `seq` order and no commit-visibility watermark (`pg_snapshot_xmin`) is needed. Never enable
+`BEGIN CONCURRENT`. The database runs in WAL mode so reads proceed while a write is in flight. Only one
+server process may open a database file.
+
+**Projector:** `internal/adapter/outbound/eventstore/sqlite/projection`. The handler contract is the same as
+PostgreSQL (`Name`, `Version`, `Handles`, `Apply`, `Reset`, idempotent `Apply`, version bump triggers a
+rebuild). It differs in three ways:
+
+- An in-process buffered-channel notifier replaces `LISTEN`/`NOTIFY`.
+- There is no leader election: the single-process, single-writer model replaces the advisory lock. The
+  `ProjectorLock` exists only to satisfy the conformance suite and is not used by production wiring.
+- A stored handler version that is *newer* than the build (a downgrade) is refused instead of triggering a
+  rebuild.
+
+**Guards:** `IncidentHierarchyGuard` and `AccessGuard` are implemented with in-process mutexes instead of
+advisory locks. Retention (`IncidentRetention`) is implemented too, with the `eventsourcing_archive_*` tables.
+
+**Parity:** Behaviour is verified against the in-memory and PostgreSQL implementations by the shared
+conformance suite in `internal/adapter/outbound/conformance`. Schema changes must be made in both
+`migrations/postgres` and `migrations/sqlite`.
 
 ---
 
@@ -667,10 +711,10 @@ POST /api/v2/graphql          (otelecho)
 
 ## Composition Root
 
-`internal/cli/serve.go` is the only place that knows about concrete types. Everything else depends on interfaces. The startup sequence:
+`internal/cli/serve.go` and `internal/cli/stack.go` are the only places that know about concrete types. Everything else depends on interfaces. `stack.go` holds one builder per backend (`buildPostgresStack`, `buildSQLiteStack` and the in-memory builder used by tests); the backend is chosen from the `database-url` DSN. The startup sequence:
 
 1. Initialise OTEL SDK (traces, metrics, logs).
-2. Open Postgres pool with `otelpgx` tracer.
+2. Open the database (a Postgres pool with `otelpgx` tracer, or the SQLite reader/writer handles).
 3. Construct infrastructure: event store, transactor, notifier.
 4. Construct repositories (wrap event store).
 5. Construct application services via `service.Factory`.
@@ -678,7 +722,7 @@ POST /api/v2/graphql          (otelecho)
 7. Start projector goroutine.
 8. Start OIDC client; attach `UserRepository`.
 9. Start Echo HTTP server with all routes and middleware.
-10. Block until context cancellation; drain projector, close pool.
+10. Block until context cancellation; drain projector, close the database.
 
 ---
 
@@ -687,6 +731,6 @@ POST /api/v2/graphql          (otelecho)
 1. **Domain event** — add a struct to `domain/xxx/events.go` and register it in `New()`.
 2. **Command** — add a method to the aggregate that validates the invariant and calls `TrackChange`.
 3. **Service method** — add to the service, thread through the inbound port interface.
-4. **Projection** — add a case to the relevant `Handler.Handle` switch to update the read model. Bump the handler `Version()`.
+4. **Projection** — add a case to the relevant handler's `Apply` in every projector (`postgres/projection`, `sqlite/projection` and `inmem/projection`) to update the read model. Bump the handler `Version()` in each.
 5. **GraphQL** — add the field/mutation to `api/schema.graphql`, run `go generate`, implement the resolver.
-6. **Migration** — if the read-model schema changes, add a new goose migration file.
+6. **Migration** — if the read-model schema changes, add a new goose migration to both `migrations/postgres` and `migrations/sqlite`. The resulting schema must be equivalent; add the matching queries in `queries/postgres` and `queries/sqlite`.
