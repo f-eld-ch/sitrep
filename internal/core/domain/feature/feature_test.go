@@ -192,6 +192,41 @@ func TestFeature_EffectiveTime(t *testing.T) {
 		assert.Equal(t, newer, f.Geometry(), "state is the latest by effective time")
 	})
 
+	t.Run("a change before the placement of a free feature moves the placement back", func(t *testing.T) {
+		f := placeAt(t, t1405, nil)
+		require.NoError(t, f.Restyle(props, feature.ChangeContext{EffectiveAt: t1400}, actor, drawnLater))
+
+		assert.Equal(t, t1400, f.PlacedAt())
+		assert.Equal(t, props, f.Properties())
+
+		// Moving it now is not before the placement any more, and records nothing more.
+		before := len(f.Root().PendingEvents())
+		require.NoError(t, f.Move(geom, feature.ChangeContext{EffectiveAt: t1400}, actor, drawnLater))
+		assert.Len(t, f.Root().PendingEvents(), before+1)
+	})
+
+	t.Run("a feature that was changed since keeps the time of those changes", func(t *testing.T) {
+		f := placeAt(t, t1405, nil)
+		later := map[string]any{"type": "Point", "coordinates": []any{9.0, 47.0}}
+		require.NoError(t, f.Move(later, feature.ChangeContext{EffectiveAt: t1410}, actor, drawnLater))
+		require.NoError(t, f.Restyle(props, feature.ChangeContext{EffectiveAt: t1400}, actor, drawnLater))
+
+		assert.Equal(t, t1400, f.PlacedAt())
+		assert.Equal(t, later, f.Geometry(), "the later geometry stays")
+	})
+
+	t.Run("a removed feature cannot be backdated", func(t *testing.T) {
+		f := placeAt(t, t1405, nil)
+		require.NoError(
+			t,
+			f.Remove(shared.DeleteReasonManual, feature.ChangeContext{EffectiveAt: t1410}, actor, drawnLater),
+		)
+
+		err := f.Restyle(props, feature.ChangeContext{EffectiveAt: t1400}, actor, drawnLater)
+		require.ErrorIs(t, err, shared.ErrNotFound)
+		assert.Equal(t, t1405, f.PlacedAt())
+	})
+
 	t.Run("change before placement is rejected", func(t *testing.T) {
 		f := placeAt(t, t1405, &msgA)
 		err := f.Move(geom, feature.ChangeContext{EffectiveAt: t1400}, actor, drawnLater)

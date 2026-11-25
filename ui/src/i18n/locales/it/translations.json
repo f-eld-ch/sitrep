@@ -192,7 +192,7 @@
     },
     "changeTime": {
       "label": "Valido dal",
-      "hint": "La modifica vale da questo momento sulla linea temporale."
+      "hint": "La modifica vale da questo momento sulla linea temporale. Se precede il disegno dell'oggetto, l'oggetto inizia già da allora."
     },
     "selectionRing": "Evidenzia l'oggetto selezionato",
     "pending": {
