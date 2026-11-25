@@ -1,3 +1,14 @@
+## [26.11.6](https://github.com/f-eld-ch/sitrep/compare/v26.11.5..v26.11.6) - 2026-11-25
+
+### ⛰️  Features
+
+- *(feature)* Date a feature before its first placement time ([#2181](https://github.com/f-eld-ch/sitrep/issues/2181)) - ([f73a9c9](https://github.com/f-eld-ch/sitrep/commit/f73a9c93c67c4120b668b9230b37ad2bfbf31b7b))
+
+### 🐛 Bug Fixes
+
+- *(map)* Draw the features of a layer switched to after the map has loaded ([#2180](https://github.com/f-eld-ch/sitrep/issues/2180)) - ([f735c64](https://github.com/f-eld-ch/sitrep/commit/f735c649976da37087fe714d484c66659f874e66))
+
+
 ## [26.11.5](https://github.com/f-eld-ch/sitrep/compare/v26.11.4..v26.11.5) - 2026-11-25
 
 ### ⛰️  Features
