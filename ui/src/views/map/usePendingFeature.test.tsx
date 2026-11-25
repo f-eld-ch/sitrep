@@ -25,7 +25,6 @@ vi.mock("react-i18next", () => ({
 
 const geometry = { type: "Point" as const, coordinates: [8, 47] };
 const dispatch = vi.fn();
-const createdAt = new Date("2026-01-15T08:00:00Z");
 
 const layerState = (pendingIds: string[]): LayerState => ({
   layers: [],
@@ -47,7 +46,7 @@ function render(featureId: string | undefined, time: MapTime = {}) {
   const wrapper = ({ children }: { children: ReactNode }) => (
     <IncidentContext.Provider
       value={{
-        state: { incident: { createdAt } as never, loadedForId: "inc-1" },
+        state: { incident: {} as never, loadedForId: "inc-1" },
         dispatch: () => null,
       }}
     >
@@ -70,10 +69,6 @@ beforeEach(() => {
 describe("usePendingFeature", () => {
   it.each([["unknown"], [undefined]])("is undefined for %s", (featureId) => {
     expect(render(featureId).result.current).toBeUndefined();
-  });
-
-  it("offers the earliest time the feature can be given: the start of the incident", () => {
-    expect(render("p1").result.current?.earliest).toEqual(createdAt);
   });
 
   it("reports the saving state", () => {

@@ -1,5 +1,4 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import dayjs from "dayjs";
 import type { Feature, GeoJsonProperties, Geometry } from "geojson";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -154,13 +153,12 @@ describe("BabsIconController", () => {
     expect(screen.getByRole("button", { name: "Verwerfen" })).toBeInTheDocument();
   });
 
-  it("lets a saved feature on the free map be changed as of a time after the incident began", () => {
+  it("lets a saved feature on the free map be given any time: no earliest, no latest", () => {
     renderController();
 
-    expect(screen.getByLabelText("Gültig ab")).toHaveAttribute(
-      "min",
-      dayjs(new Date("2026-01-01T08:00:00Z")).format("YYYY-MM-DDTHH:mm"),
-    );
+    const time = screen.getByLabelText("Gültig ab");
+    expect(time).not.toHaveAttribute("min");
+    expect(time).not.toHaveAttribute("max");
   });
 
   it.each([

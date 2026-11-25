@@ -240,14 +240,6 @@ func TestFeatureService_PlaceFeature_Failures(t *testing.T) {
 			shared.ErrInvalidInput)
 	})
 
-	t.Run("a change in the future", func(t *testing.T) {
-		future := testAt.Add(time.Hour)
-
-		require.ErrorIs(t,
-			place(r, r.incidentID, r.layerID, "k4", testGeometry, inbound.FeatureChange{EffectiveAt: &future}),
-			shared.ErrInvalidInput)
-	})
-
 	t.Run("a change in the past takes effect then", func(t *testing.T) {
 		past := testAt.Add(-time.Hour)
 

@@ -374,12 +374,6 @@ func (s *FeatureService) resolveChange(
 			return feature.ChangeContext{EffectiveAt: now}, nil
 		}
 
-		if change.EffectiveAt.After(now) {
-			return feature.ChangeContext{}, shared.ValidationError{
-				Field: "effectiveAt", Message: "must not be in the future",
-			}
-		}
-
 		return feature.ChangeContext{EffectiveAt: *change.EffectiveAt}, nil
 	}
 

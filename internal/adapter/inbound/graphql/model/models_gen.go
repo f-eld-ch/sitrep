@@ -178,7 +178,7 @@ type FeatureChange struct {
 
 // When a feature change takes effect on the map timeline.
 // On the message map layer, messageId is required and the change takes effect at that message's
-// time. On other layers, messageId is rejected and effectiveAt (never in the future) is optional;
+// time. On other layers, messageId is rejected and effectiveAt (any time, past or future) is optional;
 // without it the change takes effect now.
 // A change dated before the feature was first placed moves the feature's start back to that time,
 // so it is there from then on (not for a feature drawn for a message, whose time is the message's).
