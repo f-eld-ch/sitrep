@@ -326,6 +326,25 @@
     "fetchLayers": "Recuperare il livello",
     "selectLayer": "Selezionare il livello"
   },
+  "exportHeader": {
+    "title": "Intestazione della mappa",
+    "classification": "Classificazione",
+    "classifications": {
+      "intern": "Interno",
+      "vertraulich": "Confidenziale",
+      "geheim": "Segreto"
+    },
+    "messageMap": "Carta dei messaggi",
+    "commandMap": "Carta di condotta",
+    "baseMap": "Carta nazionale swisstopo",
+    "state": "Stato",
+    "keeper": "Tenuta della carta",
+    "hint": "L'intestazione si trova in alto a sinistra sulla mappa, per PDF, PNG, JPEG e WEBP.",
+    "unavailable": "Non possibile per l'esportazione vettoriale",
+    "baseMapLabel": "Carta di base",
+    "scaleLabel": "Scala",
+    "organisation": "Organizzazione"
+  },
   "layerControl": {
     "messageMapHint": "Disegnato tramite i messaggi",
     "layers": "Livelli",

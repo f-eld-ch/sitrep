@@ -149,7 +149,8 @@ These are known and accepted or planned; none is hidden. The fixable ones are tr
 
 1. **Content-Security-Policy is delivered as a `<meta>` tag** (`ui/index.html`) and is wider than
    necessary: `img-src` and `connect-src` allow any `https:` origin (needed for user-configured WMS
-   and WMTS map layers), `style-src` allows `'unsafe-inline'`, and `script-src-elem` still lists
+   and WMTS map layers), `connect-src` also allows `data:` and `blob:` (the map export reads the
+   images it has made itself; neither reaches the network), `style-src` allows `'unsafe-inline'`, and `script-src-elem` still lists
    `https://api.mapbox.com`. A `meta` policy cannot set `frame-ancestors`. A policy sent as an HTTP
    header, with the Mapbox entry removed, is a planned improvement.
 2. **No application-level rate limiting.** Login throttling and request limits are left to the

@@ -326,6 +326,25 @@
     "fetchLayers": "Récupérer les calques",
     "selectLayer": "Sélectionner une calque"
   },
+  "exportHeader": {
+    "title": "En-tête de la carte",
+    "classification": "Classification",
+    "classifications": {
+      "intern": "Interne",
+      "vertraulich": "Confidentiel",
+      "geheim": "Secret"
+    },
+    "messageMap": "Carte des messages",
+    "commandMap": "Carte de conduite",
+    "baseMap": "Carte nationale swisstopo",
+    "state": "État",
+    "keeper": "Tenue de la carte",
+    "hint": "L'en-tête figure en haut à gauche de la carte, pour PDF, PNG, JPEG et WEBP.",
+    "unavailable": "Impossible pour l'export vectoriel",
+    "baseMapLabel": "Carte de base",
+    "scaleLabel": "Échelle",
+    "organisation": "Organisation"
+  },
   "layerControl": {
     "messageMapHint": "Dessiné via les messages",
     "layers": "Calques",

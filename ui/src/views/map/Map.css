@@ -231,3 +231,33 @@
 .sitrep-draw-locked .mapboxgl-ctrl-group:has(.mapbox-gl-draw_ctrl-draw-btn) {
   display: none;
 }
+
+/*
+ * The export dialog of @watergis/maplibre-gl-export in the colours, font and corners of the app.
+ * The library names its roles after shadcn/ui and says to change those (see its stylesheet);
+ * `:root` raises the specificity above the library's own selector, whichever stylesheet loads
+ * first.
+ */
+:root .gl-export-dialog,
+:root .gl-export-adjust-bar,
+:root .gl-export-theme {
+  --gl-export-primary: var(--color-primary);
+  --gl-export-primary-foreground: #ffffff;
+  --gl-export-ring: var(--color-primary);
+  --gl-export-background: var(--color-bg);
+  --gl-export-foreground: var(--color-fg);
+  --gl-export-muted: var(--color-bg-subtle);
+  --gl-export-muted-foreground: var(--color-fg-muted);
+  --gl-export-secondary: var(--color-bg-subtle);
+  --gl-export-accent: var(--color-bg-subtle);
+  --gl-export-accent-foreground: var(--color-fg);
+  --gl-export-secondary-foreground: var(--color-fg);
+  --gl-export-preview-background: var(--color-bg-subtle);
+  --gl-export-border: var(--color-border);
+  --gl-export-input: var(--color-border);
+  --gl-export-input-background: var(--color-bg);
+  --gl-export-destructive: var(--color-danger);
+  --gl-export-font: var(--font-sans);
+  --gl-export-radius: 4px;
+  --gl-export-radius-sm: 3px;
+}

@@ -326,6 +326,25 @@
     "fetchLayers": "Layer abrufen",
     "selectLayer": "Layer auswählen"
   },
+  "exportHeader": {
+    "title": "Kartenkopf",
+    "classification": "Klassifizierung",
+    "classifications": {
+      "intern": "Intern",
+      "vertraulich": "Vertraulich",
+      "geheim": "Geheim"
+    },
+    "messageMap": "Nachrichtenkarte",
+    "commandMap": "Führungskarte",
+    "baseMap": "Landeskarte swisstopo",
+    "state": "Stand",
+    "keeper": "Kartenführung",
+    "hint": "Der Kartenkopf steht oben links auf der Karte, bei PDF, PNG, JPEG und WEBP.",
+    "unavailable": "Nicht möglich für Vektor-Export",
+    "baseMapLabel": "Basiskarte",
+    "scaleLabel": "Massstab",
+    "organisation": "Organisation"
+  },
   "layerControl": {
     "messageMapHint": "Wird über Meldungen gezeichnet",
     "layers": "Layer",

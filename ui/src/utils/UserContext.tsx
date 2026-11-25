@@ -14,7 +14,7 @@ const initialState: UserState = { isLoggedin: false, username: "", email: "", su
 
 // Define action types
 type UserAction =
-  | { type: "LOGIN"; payload: { username: string; email: string; sub: string } }
+  | { type: "LOGIN"; payload: { username: string; name?: string; email: string; sub: string } }
   | { type: "LOGOUT" };
 
 // Define the reducer function
@@ -24,6 +24,7 @@ const userReducer = (state: UserState, action: UserAction): UserState => {
       return {
         isLoggedin: true,
         username: action.payload.username,
+        name: action.payload.name,
         email: action.payload.email,
         sub: action.payload.sub,
       };
@@ -75,6 +76,7 @@ const UserInfoFetcher = () => {
           isLoggedin: true,
           email: userInfo.email,
           username: userInfo.user || userInfo.preferredUsername,
+          name: userInfo.name || undefined,
           sub: userInfo.sub ?? userInfo.user ?? "",
         };
 
@@ -83,6 +85,7 @@ const UserInfoFetcher = () => {
           newUserState.isLoggedin !== userState.isLoggedin ||
           newUserState.email !== userState.email ||
           newUserState.username !== userState.username ||
+          newUserState.name !== userState.name ||
           newUserState.sub !== userState.sub
         ) {
           dispatch({ type: "LOGIN", payload: newUserState });

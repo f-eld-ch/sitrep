@@ -326,6 +326,25 @@
     "fetchLayers": "Retrieve layer",
     "selectLayer": "Select layer"
   },
+  "exportHeader": {
+    "title": "Map header",
+    "classification": "Classification",
+    "classifications": {
+      "intern": "Internal",
+      "vertraulich": "Confidential",
+      "geheim": "Secret"
+    },
+    "messageMap": "Message map",
+    "commandMap": "Command map",
+    "baseMap": "swisstopo national map",
+    "state": "As of",
+    "keeper": "Map keeper",
+    "hint": "The header is placed at the top left of the map, for PDF, PNG, JPEG and WEBP.",
+    "unavailable": "Not possible for vector export",
+    "baseMapLabel": "Base map",
+    "scaleLabel": "Scale",
+    "organisation": "Organisation"
+  },
   "layerControl": {
     "messageMapHint": "Drawn through messages",
     "layers": "Layers",
