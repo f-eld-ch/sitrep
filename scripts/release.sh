@@ -165,6 +165,14 @@ release_chart() {
 	fi
 
 	local previous="${latest:+chart-v$latest}"
+
+	# Nothing to release when helm/ is identical to the last chart release and this run
+	# would not change Chart.yaml either (a pending version/appVersion edit counts as a change).
+	if [[ -n $previous && $version == "$current" && $app == "$current_app" ]] &&
+		git diff --quiet "$previous" HEAD -- helm; then
+		die "no changes under helm/ since $previous — nothing to release"
+	fi
+
 	printf 'Releasing %s (chart %s, appVersion %s; previous chart release: %s)\n' \
 		"$tag" "$version" "$app" "${previous:-none}"
 	$dry_run && printf '(dry run — nothing will be changed)\n'
