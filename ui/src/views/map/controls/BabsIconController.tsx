@@ -43,9 +43,12 @@ const BabsIconController = () => {
   const { state: incidentState } = useContext(IncidentContext);
   // A saved feature on the free map can be changed as of an earlier time; drawing for a message
   // always takes the message's time.
+  const placedAt = state.layers
+    .flatMap((l) => l.layer?.features ?? [])
+    .find((f) => f?.id === selectedFeature?.id)?.placedAt;
   const changeTime =
     pending === undefined && drawingMessage === undefined && asOf === undefined
-      ? { earliest: incidentState.incident?.createdAt }
+      ? { earliest: incidentState.incident?.createdAt, placedAt }
       : undefined;
 
   const onUpdate = useCallback(

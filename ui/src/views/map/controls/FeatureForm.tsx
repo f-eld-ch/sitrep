@@ -54,7 +54,11 @@ export interface FeatureFormProps {
     save?: boolean;
   }) => void;
   /** Set on a saved feature of the free map: the form then offers the time the change takes effect. */
-  changeTime?: { earliest?: Date };
+  changeTime?: {
+    earliest?: Date;
+    /** When the feature was placed on the timeline: what the time field shows to begin with. */
+    placedAt?: Date;
+  };
   /** Set while the feature has not been saved yet: the form then asks for the time and saves it. */
   pending?: PendingFeatureActions;
   /** The time is not the user's to choose (a message's drawing takes the message's): no time field. */
@@ -161,10 +165,13 @@ export function FeatureForm({
   }, [canRotate, isUnSign, selectedFeature, values]);
 
   // The time a new feature, or a change to a saved one, takes effect at: now unless the user
-  // picks another one.
+  // picks another one. A saved feature shows the time it was placed at to begin with; leaving it
+  // alone changes it now, as before, and picking another time dates the change then (or, before the
+  // placement, moves the start of the feature back).
   const [openedAt] = useState(() => currentTime());
-  const [effectiveInput, setEffectiveInput] = useState(() => toLocalInput(new Date(openedAt)));
-  const effectiveTouched = effectiveInput !== toLocalInput(new Date(openedAt));
+  const [startInput] = useState(() => toLocalInput(new Date(changeTime?.placedAt ?? openedAt)));
+  const [effectiveInput, setEffectiveInput] = useState(startInput);
+  const effectiveTouched = effectiveInput !== startInput;
 
   const commit = useCallback(() => {
     const picked = new Date(effectiveInput);
