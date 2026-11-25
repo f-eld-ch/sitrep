@@ -3,6 +3,7 @@
 ### ⛰️  Features
 
 - *(layer)* A new incident starts with the message map only ([#2173](https://github.com/f-eld-ch/sitrep/issues/2173)) - ([c289352](https://github.com/f-eld-ch/sitrep/commit/c28935289b60256c3c014b1c0539618ef4be4502))
+- *(map)* Upgrade the map export to v6 and add a BABS map header ([#2174](https://github.com/f-eld-ch/sitrep/issues/2174)) - ([bb5020b](https://github.com/f-eld-ch/sitrep/commit/bb5020b90f5e5fe2b6baaee69a15b584173046ce))
 - *(map)* Improve map edit panel with with symbol search and curved flooded areas ([#2172](https://github.com/f-eld-ch/sitrep/issues/2172)) - ([de5e1df](https://github.com/f-eld-ch/sitrep/commit/de5e1dfef4c2b0b157fc113cb16978c545b0f508))
 - *(map)* Put a marker where the search took the map ([#2171](https://github.com/f-eld-ch/sitrep/issues/2171)) - ([db9f226](https://github.com/f-eld-ch/sitrep/commit/db9f226f5aa9792013ccc195114137df3a87e22e))
 
@@ -14,7 +15,9 @@
 
 ### 📚 Documentation
 
+- *(readme)* Dev.sitrep.ch is restricted to selected users ([#2178](https://github.com/f-eld-ch/sitrep/issues/2178)) - ([444f873](https://github.com/f-eld-ch/sitrep/commit/444f873a0b981b56ec7a1827f0a6698b4645426c))
 - *(security)* Add the security assurance case ([#2153](https://github.com/f-eld-ch/sitrep/issues/2153)) - ([e9c801c](https://github.com/f-eld-ch/sitrep/commit/e9c801c4f9f82cfb15924fc2992a2979b446b539))
+- Refresh README and developer documentation ([#2177](https://github.com/f-eld-ch/sitrep/issues/2177)) - ([f9ef7c1](https://github.com/f-eld-ch/sitrep/commit/f9ef7c1d65ba2fd31a775a0e4d8312a5e0f2ef0f))
 - Move the administrator documentation to sitrep.ch ([#2158](https://github.com/f-eld-ch/sitrep/issues/2158)) - ([d864f96](https://github.com/f-eld-ch/sitrep/commit/d864f96fdb1ffc669bd4ae192487b5f1669f03fb))
 
 ### 🧪 Testing
@@ -25,6 +28,8 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump i18next from 27.2.6 to 27.2.7 in /ui ([#2176](https://github.com/f-eld-ch/sitrep/issues/2176)) - ([a9cb849](https://github.com/f-eld-ch/sitrep/commit/a9cb849ec221adbdaf3581fea63142b4648b44f7))
+- *(deps)* Bump github.com/labstack/echo/v5 from 5.4.6 to 5.4.7 ([#2175](https://github.com/f-eld-ch/sitrep/issues/2175)) - ([40101d5](https://github.com/f-eld-ch/sitrep/commit/40101d5c9944b3b4426bb89c50519e5c9dc97cb3))
 - *(deps)* Bump i18next from 27.2.2 to 27.2.6 in /ui ([#2165](https://github.com/f-eld-ch/sitrep/issues/2165)) - ([ad4835f](https://github.com/f-eld-ch/sitrep/commit/ad4835ff40f43bdf201acd533f17c56a1225aa6a))
 - *(deps)* Bump react-i18next from 18.0.2 to 18.0.3 in /ui ([#2154](https://github.com/f-eld-ch/sitrep/issues/2154)) - ([3d19e14](https://github.com/f-eld-ch/sitrep/commit/3d19e14787107716daa53900fef3c453e56882e9))
 - *(deps)* Bump react-dropzone from 20.2.0 to 20.2.1 in /ui ([#2155](https://github.com/f-eld-ch/sitrep/issues/2155)) - ([131d0f8](https://github.com/f-eld-ch/sitrep/commit/131d0f8a8492a40914d1c65ee605f09160626107))
