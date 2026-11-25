@@ -70,7 +70,10 @@ const dispatch = vi.fn();
 
 function renderPopup(
   feature: F,
-  extra: { pending?: PendingFeatureActions; changeTime?: { earliest?: Date } } = {},
+  extra: {
+    pending?: PendingFeatureActions;
+    changeTime?: { earliest?: Date; placedAt?: Date };
+  } = {},
 ) {
   const state = { layers: [], pendingFeatures: [], removedFeatures: [] } as unknown as LayerState;
   const tree = (f: F) => (
@@ -357,6 +360,28 @@ describe("FeatureForm time", () => {
     save();
 
     expect(onUpdate.mock.calls[0][0].effectiveAt).toEqual(new Date("2026-01-02T09:30"));
+  });
+
+  it("shows the time the feature was placed at, and changes it now unless another is picked", () => {
+    renderPopup(point({ icon: aliasFor("1101") }), {
+      changeTime: { earliest, placedAt: new Date(2026, 0, 2, 9, 30) },
+    });
+
+    expect(label("Gültig ab")).toHaveValue("2026-01-02T09:30");
+    save();
+
+    expect(onUpdate.mock.calls[0][0].effectiveAt).toBeUndefined();
+  });
+
+  it("dates the change at the picked time, also before the placement", () => {
+    renderPopup(point({ icon: aliasFor("1101") }), {
+      changeTime: { earliest, placedAt: new Date(2026, 0, 2, 9, 30) },
+    });
+
+    fireEvent.change(label("Gültig ab"), { target: { value: "2026-01-02T07:15" } });
+    save();
+
+    expect(onUpdate.mock.calls[0][0].effectiveAt).toEqual(new Date("2026-01-02T07:15"));
   });
 
   it("ignores an unreadable time", () => {
