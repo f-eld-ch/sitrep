@@ -201,7 +201,7 @@ export function IncidentCard(props: {
   );
 
   return (
-    <div className={cardClass}>
+    <div data-testid="incident-list-incident-card" className={cardClass}>
       <div className="p-4">
         <div className="text-sm">
           <h4 className={clsx("mb-2 font-bold", isChild ? "text-lg" : "text-xl")}>
