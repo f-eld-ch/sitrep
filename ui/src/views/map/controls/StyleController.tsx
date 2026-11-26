@@ -138,7 +138,10 @@ function StyleController() {
 
   if (!active) {
     return (
-      <div className="maplibregl-ctrl maplibregl-ctrl-group mb-0! self-end text-black">
+      <div
+        className="maplibregl-ctrl maplibregl-ctrl-group mb-0! self-end text-black"
+        data-tour="map-style"
+      >
         <button type="button" className={btnClass} onClick={() => setActive(!active)}>
           <FontAwesomeIcon icon={faMap} size="lg" />
         </button>

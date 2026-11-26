@@ -15,6 +15,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import { clsx } from "clsx";
 import { Spinner } from "components";
+import { useTour } from "components/tour/Tour";
+import { incidentListTour } from "components/tour/tours";
 import { Button, Notification, PageTitle, Tag } from "components/ui";
 import dayjs from "dayjs";
 import { useContext, useState } from "react";
@@ -35,6 +37,8 @@ function List() {
   const [deleteIncident, deleteState] = useDeleteIncident();
 
   const mutationError = closeState.error ?? deleteState.error;
+
+  useTour("incident-list", incidentListTour(t));
 
   if (result.status === "error") {
     return <Notification variant="danger">{t(`errors.${result.error.code}`)}</Notification>;
@@ -57,6 +61,7 @@ function List() {
           rounded
           light
           capitalized
+          data-tour="incident-create"
           onClick={() => navigate("../new")}
         >
           <FontAwesomeIcon icon={faPlusCircle} />
@@ -68,6 +73,7 @@ function List() {
           size="xs"
           rounded
           light
+          data-tour="incident-filter"
           onClick={() => setFilterClosed(!filterClosed)}
         >
           <FontAwesomeIcon icon={filterClosed ? faEye : faEyeLowVision} />
@@ -201,7 +207,7 @@ export function IncidentCard(props: {
   );
 
   return (
-    <div className={cardClass}>
+    <div className={cardClass} data-tour="incident-card">
       <div className="p-4">
         <div className="text-sm">
           <h4 className={clsx("mb-2 font-bold", isChild ? "text-lg" : "text-xl")}>
@@ -243,6 +249,7 @@ export function IncidentCard(props: {
           <button
             type="button"
             data-testid="enter-button"
+            data-tour="incident-enter"
             className={footerItem}
             onClick={() => {
               navigate(`../${props.incident.id}/dashboard`);

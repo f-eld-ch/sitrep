@@ -17,6 +17,8 @@ import React, {
 import { useDropzone } from "react-dropzone";
 import { useBlocker, useNavigate, useParams } from "react-router";
 import { type Attachment, Medium, type Message, PriorityStatus, TriageStatus } from "types";
+import { useTour } from "components/tour/Tour";
+import { journalEditorTour } from "components/tour/tours";
 import { Button, Notification, PageTitle, Tag } from "components/ui";
 import useDebounce from "utils/useDebounce";
 import {
@@ -60,6 +62,7 @@ const EMPTY_MESSAGES: Message[] = [];
 
 function Editor() {
   const { t } = useTranslation();
+  useTour("journal-editor", journalEditorTour(t));
   const { incidentId } = useParams();
   const navigate = useNavigate();
   const {
@@ -479,7 +482,10 @@ function InputBox({
         </div>
       )}
 
-      <div className="mb-3 flex flex-col items-start xl:flex-row xl:gap-4">
+      <div
+        className="mb-3 flex flex-col items-start xl:flex-row xl:gap-4"
+        data-tour="editor-medium"
+      >
         <div className="mb-1 w-full xl:mb-0 xl:w-32 xl:shrink-0 xl:pt-1.5 xl:text-right">
           <label htmlFor={mediumId} className="text-sm font-bold capitalize">
             {t("mediumName")}
@@ -540,7 +546,12 @@ function InputBox({
     </>
   );
   return showBox ? (
-    <div className="rounded-xl border border-border bg-bg-elevated p-5 shadow-xl">{inner}</div>
+    <div
+      className="rounded-xl border border-border bg-bg-elevated p-5 shadow-xl"
+      data-tour="editor-form"
+    >
+      {inner}
+    </div>
   ) : (
     inner
   );

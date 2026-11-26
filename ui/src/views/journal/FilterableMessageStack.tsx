@@ -110,7 +110,7 @@ export function FilterableMessageStack({
     focusMessageIds !== undefined || filters.untriaged || filters.highPriority || filters.mine;
 
   return (
-    <div className={clsx("flex flex-col", className)}>
+    <div className={clsx("flex flex-col", className)} data-tour="message-stack">
       <MessageStack
         messages={filtered}
         effectiveId={effectiveId}
@@ -122,6 +122,7 @@ export function FilterableMessageStack({
       />
       {!bare && (
         <div
+          data-tour="message-stack-filters"
           className={clsx(
             "flex flex-wrap gap-1 px-3 py-1.5",
             anyActive ? "border-t border-border/60" : "border-t border-transparent",

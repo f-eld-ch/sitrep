@@ -24,6 +24,16 @@ flags:
       - segment:
           key: earlyadopter
           value: true
+  # flag for rolling out the guided tour of the UI, remove within 3 months after it is integrated
+  - key: ui-tour
+    name: UI Tour
+    type: BOOLEAN_FLAG_TYPE
+    description: Show a guided tour of each page on the first visit, and the help button in the navbar that starts it again
+    enabled: false
+    rollouts:
+      - segment:
+          key: Development
+          value: true
   # nimdanitro: flag for indicating that it is a sitrep managed instances
   - key: is-sitrep-managed
     name: Sitrep Managed

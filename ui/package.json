@@ -57,6 +57,7 @@
     "@watergis/maplibre-gl-export": "~6.0.0",
     "clsx": "^2.1.1",
     "dayjs": "^1.11.23",
+    "driver.js": "^1.14.0",
     "graphql": "^17.1.0",
     "html-react-parser": "^6.1.10",
     "i18next": "^27.2.7",
