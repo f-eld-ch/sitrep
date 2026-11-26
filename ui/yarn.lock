@@ -6042,6 +6042,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"driver.js@npm:^1.14.0":
+  version: 1.14.0
+  resolution: "driver.js@npm:1.14.0"
+  checksum: 10/c3998875d28c238837d8bb4ca6071dae4f5d5acdf7eac6cdc46f9b2e2a034129c77841b27de4567ca49dfbf4e9124fd06c80da041994a99277e6e7193999b9a0
+  languageName: node
+  linkType: hard
+
 "dunder-proto@npm:^1.0.0, dunder-proto@npm:^1.0.1":
   version: 1.0.1
   resolution: "dunder-proto@npm:1.0.1"
@@ -10928,6 +10935,7 @@ __metadata:
     "@watergis/maplibre-gl-export": "npm:~6.0.0"
     clsx: "npm:^2.1.1"
     dayjs: "npm:^1.11.23"
+    driver.js: "npm:^1.14.0"
     git-rev-sync: "npm:^3.0.2"
     graphql: "npm:^17.1.0"
     html-react-parser: "npm:^6.1.10"

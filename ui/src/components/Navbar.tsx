@@ -4,6 +4,7 @@ import {
   faRectangleList,
   faCaretDown,
   faChevronDown,
+  faCircleQuestion,
   faChartColumn,
   faClipboard,
   faClipboardCheck,
@@ -38,6 +39,7 @@ import { IncidentContext, UserContext } from "utils";
 import { useDarkMode } from "utils/useDarkMode";
 import { CURRENT_SHA, CURRENT_VERSION, DOCUMENTATION_URL, buildChangelogUrl } from "utils/version";
 import LanguageSwitcher from "./LanguageSwitcher";
+import { useTourControls } from "./tour/Tour";
 
 const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false }) => {
   const [isMenuActive, setIsMenuActive] = useState<boolean>(isActive);
@@ -74,7 +76,7 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
           {/* start */}
           <div className="flex min-w-0 flex-1 flex-row items-stretch">
             {incidentState.incident && (
-              <div className="group relative flex items-stretch">
+              <div className="group relative flex items-stretch" data-tour="nav-incident">
                 <NavLink
                   to={`/incident/${incidentId}/dashboard`}
                   title={`${t("incident")} ${incidentState.incident.name}`}
@@ -141,6 +143,7 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
           {/* end — clock hides first via container query, user dropdown never shrinks */}
           <div className="flex shrink-0 flex-row items-stretch lg:ml-auto">
             <CurrentTime />
+            <TourButton />
             <UserNavBar />
           </div>
         </div>
@@ -149,6 +152,7 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
         <button
           type="button"
           className="ml-auto flex items-center px-3 lg:hidden"
+          data-tour="nav-burger"
           aria-label="Toggle menu"
           aria-expanded={isMenuActive}
           onClick={(e) => {
@@ -375,6 +379,7 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
               <span>{t("divisionsNames.Karte.description")}</span>
             </NavLink>
           )}
+          <TourButton mobile onStart={() => setIsMenuActive(false)} />
           {/* User settings */}
           <UserNavBar />
         </div>
@@ -446,6 +451,45 @@ function VersionNavBar() {
   );
 }
 
+/** Starts the tour of the page on screen; shown only on pages that have one. */
+function TourButton({ mobile = false, onStart }: { mobile?: boolean; onStart?: () => void }) {
+  const { currentTourId, start } = useTourControls();
+  const { t } = useTranslation();
+
+  if (!currentTourId) return;
+
+  const onClick = () => {
+    onStart?.();
+    start();
+  };
+
+  if (mobile) {
+    return (
+      <button
+        type="button"
+        className="flex w-full items-center gap-2 px-4 py-2 hover:bg-bg-subtle"
+        onClick={onClick}
+      >
+        <FontAwesomeIcon icon={faCircleQuestion} />
+        <span>{t("tour.start")}</span>
+      </button>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      className="flex items-center px-3 hover:bg-bg-subtle"
+      data-tour="nav-help"
+      title={t("tour.start")}
+      aria-label={t("tour.start")}
+      onClick={onClick}
+    >
+      <FontAwesomeIcon icon={faCircleQuestion} />
+    </button>
+  );
+}
+
 function UserNavBar() {
   const { state: userState } = useContext(UserContext);
   const { t } = useTranslation();
@@ -457,7 +501,10 @@ function UserNavBar() {
   return (
     <>
       {/* Desktop: hover dropdown */}
-      <div className="group relative hidden shrink-0 items-stretch lg:ml-3 lg:flex">
+      <div
+        className="group relative hidden shrink-0 items-stretch lg:ml-3 lg:flex"
+        data-tour="nav-settings"
+      >
         <div className="flex cursor-pointer items-center gap-1.5 px-3">
           <FontAwesomeIcon icon={faCog} />
           <FontAwesomeIcon icon={faChevronDown} className="text-xs opacity-60" />
@@ -553,7 +600,7 @@ const JournalNavBar: FunctionComponent = () => {
   const incidentId = incidentState.incident.id;
 
   return (
-    <div className="group relative flex items-stretch">
+    <div className="group relative flex items-stretch" data-tour="nav-journal">
       <NavLink
         className={({ isActive }) =>
           clsx(
@@ -668,6 +715,7 @@ const ResourcesNavBar: FunctionComponent = () => {
 
   return (
     <NavLink
+      data-tour="nav-resources"
       className={({ isActive }) =>
         clsx(
           "flex items-center gap-2 px-3 whitespace-nowrap capitalize",
@@ -690,7 +738,7 @@ const MapNavBar: FunctionComponent = () => {
   if (!incidentId) return;
 
   return (
-    <div className="group relative flex items-stretch">
+    <div className="group relative flex items-stretch" data-tour="nav-map">
       <NavLink
         className={({ isActive }) =>
           clsx(
@@ -730,6 +778,7 @@ const CasualtiesNavBar: FunctionComponent = () => {
 
   return (
     <NavLink
+      data-tour="nav-casualties"
       className={({ isActive }) =>
         clsx(
           "flex items-center gap-2 px-3 whitespace-nowrap capitalize",

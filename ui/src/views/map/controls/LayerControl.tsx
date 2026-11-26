@@ -14,7 +14,10 @@ function LayerPanel() {
 
   if (!active) {
     return (
-      <div className="maplibregl-ctrl maplibregl-ctrl-group mb-0! self-end text-black">
+      <div
+        className="maplibregl-ctrl maplibregl-ctrl-group mb-0! self-end text-black"
+        data-tour="map-layers"
+      >
         <button type="button" className="maplibregl-ctrl-icon" onClick={() => setActive(true)}>
           <FontAwesomeIcon icon={faLayerGroup} size="lg" />
         </button>

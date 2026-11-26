@@ -633,5 +633,157 @@
     "revokeFailed": "Échec de la révocation du rôle par défaut.",
     "grantFailed": "Échec de l'attribution du rôle par défaut.",
     "roleChangeFailed": "Échec de la modification du rôle par défaut."
+  },
+  "tour": {
+    "start": "Démarrer la visite",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "done": "Terminer",
+    "close": "Fermer",
+    "progress": "{{current}} sur {{total}}",
+    "welcome": {
+      "title": "Bienvenue dans sitrep",
+      "description": "Cette courte visite vous présente les fonctions principales. Chaque page a sa propre visite ; relancez-la à tout moment avec le point d’interrogation dans la barre de navigation."
+    },
+    "incidentCreate": {
+      "title": "Créer un événement",
+      "description": "Un événement regroupe tout ce qui concerne une intervention : journal d’intervention, suivi dessiné, moyens et personnes."
+    },
+    "incidentFilter": {
+      "title": "Événements fermés",
+      "description": "Les événements fermés sont masqués. Affichez-les ici."
+    },
+    "incidentCard": {
+      "title": "Un événement",
+      "description": "Chaque carte affiche le nom, le lieu et l’ouverture d’un événement. Le cadenas indique si l’accès est restreint."
+    },
+    "incidentEnter": {
+      "title": "Entrer dans un événement",
+      "description": "Entrez ici dans l’événement pour accéder à son dashboard."
+    },
+    "navHelp": {
+      "title": "Aide",
+      "description": "Le point d’interrogation relance la visite de la page actuelle."
+    },
+    "navSettings": {
+      "title": "Paramètres",
+      "description": "Vous y trouvez la version, votre compte, le thème clair ou sombre, la langue, la documentation et la déconnexion."
+    },
+    "dashboardIntro": {
+      "title": "Dashboard",
+      "description": "Le dashboard vous donne une vue d’ensemble de l’événement : renseignements-clés, suivi dessiné, personnes et moyens."
+    },
+    "dashboardMessages": {
+      "title": "Renseignements-clés",
+      "description": "Les renseignements-clés triés apparaissent ici. Sélectionnez-en un pour l’afficher en entier au-dessus de la carte."
+    },
+    "dashboardMap": {
+      "title": "Suivi dessiné",
+      "description": "Le suivi dessiné de l’événement. Cliquez sur un objet pour voir les messages pour lesquels il a été dessiné."
+    },
+    "timeline": {
+      "title": "Chronologie",
+      "description": "Le curseur vous ramène à un moment antérieur de l’événement. Tout à droite, vous retrouvez la situation actuelle."
+    },
+    "dashboardKpis": {
+      "title": "Personnes et moyens",
+      "description": "Le nombre de personnes enregistrées et les moyens engagés par formation."
+    },
+    "navIncident": {
+      "title": "Événement",
+      "description": "Ce menu mène au dashboard et permet de modifier l’événement."
+    },
+    "navJournal": {
+      "title": "Journal d’intervention",
+      "description": "Le journal d’intervention avec tous les messages. Le menu contient l’éditeur, pour saisir des messages, et le triage."
+    },
+    "navResources": {
+      "title": "Moyens",
+      "description": "Les moyens mis sur pied et engagés pour l’événement."
+    },
+    "navCasualties": {
+      "title": "Personnes",
+      "description": "Disparus, morts, blessés, sans-abri et personnes bloquées, tels qu’enregistrés lors du triage."
+    },
+    "navMap": {
+      "title": "Suivi dessiné",
+      "description": "Le suivi dessiné sur toute la page, pour dessiner. Le menu contient la carte de renseignements."
+    },
+    "navBurger": {
+      "title": "Menu",
+      "description": "Sur les petits écrans, la navigation se trouve derrière ce bouton."
+    },
+    "journalIntro": {
+      "title": "Journal d’intervention",
+      "description": "Tous les messages de l’événement, les plus récents en haut. La liste se met à jour d’elle-même."
+    },
+    "messageFilters": {
+      "title": "Filtres",
+      "description": "Filtrez les messages par statut de triage, priorité et domaine."
+    },
+    "journalMessage": {
+      "title": "Un message",
+      "description": "Chaque message affiche son numéro, l’expéditeur, le destinataire, l’heure, le contenu et les domaines attribués."
+    },
+    "editorIntro": {
+      "title": "Éditeur",
+      "description": "À gauche, vous saisissez les nouveaux messages ; à droite figurent tous les messages précédents de l’événement."
+    },
+    "editorMedium": {
+      "title": "Moyen de communication",
+      "description": "Choisissez comment le message est arrivé. Les champs de saisie s’adaptent."
+    },
+    "editorForm": {
+      "title": "Saisir un message",
+      "description": "Indiquez l’expéditeur, le destinataire et le contenu, et joignez des fichiers si nécessaire. Un aperçu du message s’affiche en dessous."
+    },
+    "editorList": {
+      "title": "Messages précédents",
+      "description": "Filtrez les messages par statut de triage, priorité et domaine. «Modifier» charge un message dans l’éditeur pour le corriger."
+    },
+    "editorPrint": {
+      "title": "Imprimer",
+      "description": "Imprime les messages filtrés sous forme de tableau."
+    },
+    "triageIntro": {
+      "title": "Triage",
+      "description": "Dans le triage, vous traitez les messages reçus : attribuer les domaines, enregistrer personnes et moyens."
+    },
+    "triageStack": {
+      "title": "Messages",
+      "description": "Les messages de l’événement. Le plus ancien qui n’est pas encore trié est déjà sélectionné."
+    },
+    "triageFilters": {
+      "title": "Filtres",
+      "description": "N’affichez que les messages non triés ou que les renseignements-clés."
+    },
+    "triageSteps": {
+      "title": "Étapes",
+      "description": "Le triage d’un message passe par ces étapes. «Suivant» mène à la prochaine."
+    },
+    "triageKeys": {
+      "title": "Raccourcis clavier",
+      "description": "Le clavier est plus rapide. Les raccourcis sont listés ici."
+    },
+    "mapIntro": {
+      "title": "Suivi dessiné",
+      "description": "Dessinez ici la situation sur la carte. Cliquez sur un objet pour voir les messages pour lesquels il a été dessiné."
+    },
+    "mapSearch": {
+      "title": "Recherche",
+      "description": "Recherchez des lieux et des adresses et rendez-vous-y directement."
+    },
+    "mapDraw": {
+      "title": "Dessiner",
+      "description": "Dessinez des points, des lignes et des surfaces sur le calque actif, puis attribuez un symbole à l’objet."
+    },
+    "mapLayers": {
+      "title": "Calques",
+      "description": "Choisissez le calque sur lequel vous dessinez, affichez ou masquez des calques et ajoutez des calques WMS."
+    },
+    "mapStyle": {
+      "title": "Cartes",
+      "description": "Changez la carte de base."
+    }
   }
 }

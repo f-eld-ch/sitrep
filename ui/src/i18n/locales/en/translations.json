@@ -633,5 +633,157 @@
     "revokeFailed": "Failed to revoke default role.",
     "grantFailed": "Failed to grant default role.",
     "roleChangeFailed": "Failed to change default role."
+  },
+  "tour": {
+    "start": "Start tour",
+    "next": "Next",
+    "previous": "Back",
+    "done": "Done",
+    "close": "Close",
+    "progress": "{{current}} of {{total}}",
+    "welcome": {
+      "title": "Welcome to sitrep",
+      "description": "This short tour shows you the most important features. Every page has its own tour; start it again at any time with the question mark in the navigation bar."
+    },
+    "incidentCreate": {
+      "title": "Create an incident",
+      "description": "An incident brings together everything about an operation: the operation journal, the situation map, resources and casualties."
+    },
+    "incidentFilter": {
+      "title": "Closed incidents",
+      "description": "Closed incidents are hidden. Show them here."
+    },
+    "incidentCard": {
+      "title": "An incident",
+      "description": "Each card shows an incident's name, location and opening time. The lock shows whether access is restricted."
+    },
+    "incidentEnter": {
+      "title": "Enter an incident",
+      "description": "Enter the incident here to get to its dashboard."
+    },
+    "navHelp": {
+      "title": "Help",
+      "description": "The question mark starts the tour of the current page again."
+    },
+    "navSettings": {
+      "title": "Settings",
+      "description": "Here you find the version, your account, light or dark mode, the language, the documentation and logout."
+    },
+    "dashboardIntro": {
+      "title": "Dashboard",
+      "description": "The dashboard gives you an overview of the incident: key messages, the situation map, casualties and resources."
+    },
+    "dashboardMessages": {
+      "title": "Key messages",
+      "description": "Triaged key messages appear here. Select one to see it in full above the map."
+    },
+    "dashboardMap": {
+      "title": "Situation map",
+      "description": "The incident's situation map. Click a feature to see the messages it was drawn for."
+    },
+    "timeline": {
+      "title": "Timeline",
+      "description": "Use the slider to go back to an earlier point in the incident. All the way to the right shows the current situation again."
+    },
+    "dashboardKpis": {
+      "title": "Casualties and resources",
+      "description": "The numbers of recorded casualties and the deployed resources by formation."
+    },
+    "navIncident": {
+      "title": "Incident",
+      "description": "Use this menu to get to the dashboard and to edit the incident."
+    },
+    "navJournal": {
+      "title": "Operation journal",
+      "description": "The operation journal with all messages. The menu has the editor, to record messages, and the triage."
+    },
+    "navResources": {
+      "title": "Resources",
+      "description": "The resources called up and deployed for the incident."
+    },
+    "navCasualties": {
+      "title": "Casualties",
+      "description": "Missing, dead, injured, homeless and trapped persons, as recorded during triage."
+    },
+    "navMap": {
+      "title": "Situation map",
+      "description": "The situation map on the whole page, for drawing. The menu has the message map."
+    },
+    "navBurger": {
+      "title": "Menu",
+      "description": "On small screens, the navigation is behind this button."
+    },
+    "journalIntro": {
+      "title": "Operation journal",
+      "description": "All messages of the incident, newest first. The list updates by itself."
+    },
+    "messageFilters": {
+      "title": "Filters",
+      "description": "Filter the messages by triage status, priority and division."
+    },
+    "journalMessage": {
+      "title": "A message",
+      "description": "Each message shows its number, sender, receiver, time and content, and the divisions it is assigned to."
+    },
+    "editorIntro": {
+      "title": "Editor",
+      "description": "Record new messages on the left; all previous messages of the incident are on the right."
+    },
+    "editorMedium": {
+      "title": "Communication",
+      "description": "Choose how the message came in. The input fields adapt."
+    },
+    "editorForm": {
+      "title": "Record a message",
+      "description": "Enter the sender, receiver and content, and attach files if needed. A preview of the message appears below."
+    },
+    "editorList": {
+      "title": "Previous messages",
+      "description": "Filter the messages by triage status, priority and division. “Edit” loads a message into the editor to correct it."
+    },
+    "editorPrint": {
+      "title": "Print",
+      "description": "Prints the filtered messages as a table."
+    },
+    "triageIntro": {
+      "title": "Triage",
+      "description": "In the triage you work through incoming messages: assign divisions, record casualties and resources."
+    },
+    "triageStack": {
+      "title": "Messages",
+      "description": "The incident's messages. The oldest one not yet triaged is already selected."
+    },
+    "triageFilters": {
+      "title": "Filters",
+      "description": "Show only untriaged messages or only key messages."
+    },
+    "triageSteps": {
+      "title": "Steps",
+      "description": "Triaging a message takes you through these steps. “Next” moves on to the next one."
+    },
+    "triageKeys": {
+      "title": "Keyboard shortcuts",
+      "description": "The keyboard is faster. The shortcuts are listed here."
+    },
+    "mapIntro": {
+      "title": "Situation map",
+      "description": "Draw the situation on the map here. Click a feature to see the messages it was drawn for."
+    },
+    "mapSearch": {
+      "title": "Search",
+      "description": "Search for places and addresses and jump straight there."
+    },
+    "mapDraw": {
+      "title": "Draw",
+      "description": "Draw points, lines and areas on the active layer, then give a feature a symbol."
+    },
+    "mapLayers": {
+      "title": "Layers",
+      "description": "Choose the layer you draw on, show or hide layers and add WMS layers."
+    },
+    "mapStyle": {
+      "title": "Maps",
+      "description": "Switch the base map."
+    }
   }
 }

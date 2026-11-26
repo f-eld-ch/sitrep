@@ -46,7 +46,7 @@ function KeybindingHelp() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="relative">
+    <div className="relative" data-tour="triage-keys">
       <button
         type="button"
         aria-label={t("keybindings.title")}

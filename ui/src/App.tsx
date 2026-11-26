@@ -8,6 +8,7 @@ import "./tailwind.css";
 import { ApolloProvider } from "@apollo/client/react";
 import { default as client } from "client";
 import { Spinner } from "components";
+import { TourProvider } from "components/tour/Tour";
 import { useTranslation } from "react-i18next";
 import { IncidentContextProvider, UserProvider } from "utils";
 import { useDarkMode } from "utils/useDarkMode";
@@ -188,7 +189,7 @@ const router = createBrowserRouter([
                     path: "messages",
                     element: (
                       <Layout>
-                        <JournalMessageList showControls={false} autoScroll={true} />
+                        <JournalMessageList showControls={false} autoScroll={true} tour />
                       </Layout>
                     ),
                   },
@@ -255,7 +256,9 @@ function App() {
         <ApolloProvider client={client}>
           <FeatureFlagProvider>
             <IncidentContextProvider>
-              <RouterProvider router={router} />
+              <TourProvider>
+                <RouterProvider router={router} />
+              </TourProvider>
             </IncidentContextProvider>
           </FeatureFlagProvider>
         </ApolloProvider>

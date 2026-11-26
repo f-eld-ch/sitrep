@@ -1,4 +1,6 @@
 import { Spinner } from "components";
+import { useTour } from "components/tour/Tour";
+import { dashboardTour } from "components/tour/tours";
 import { Notification, PageTitle, Tag } from "components/ui";
 import { useFeatureChangeTimes, useIncidentMessages, useIncidentResources } from "api";
 import type { Resource, ResourceFormation, ResourceStatus } from "api";
@@ -204,6 +206,7 @@ const TIMELINE_REFRESH_MS = 10_000;
 export default function Dashboard() {
   const { incidentId } = useParams();
   const { t, i18n } = useTranslation();
+  useTour("incident-dashboard", dashboardTour(t));
   // The point in time the whole dashboard shows; undefined is live.
   const [asOf, setAsOf] = useState<Date | undefined>();
   const resourcesResult = useIncidentResources(incidentId, asOf);
@@ -403,7 +406,10 @@ export default function Dashboard() {
                 />
               </div>
             )}
-            <div className="min-h-[18rem] flex-1 overflow-hidden rounded border border-border bg-bg-elevated">
+            <div
+              className="min-h-[18rem] flex-1 overflow-hidden rounded border border-border bg-bg-elevated"
+              data-tour="dashboard-map"
+            >
               <IncidentMap
                 embedded
                 readOnly
@@ -422,7 +428,7 @@ export default function Dashboard() {
           </section>
           {/* KPIs — first on mobile, last column on desktop */}
           {showKpiColumn && (
-            <div className="order-1 xl:order-3 xl:pt-[28px]">
+            <div className="order-1 xl:order-3 xl:pt-[28px]" data-tour="dashboard-kpis">
               <DashboardKpis resourcesResult={resourcesResult} iconsLoaded={iconsLoaded} />
             </div>
           )}

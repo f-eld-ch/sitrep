@@ -162,7 +162,7 @@ function SearchControl() {
           </button>
         </Marker>
       )}
-      <div className="relative">
+      <div className="relative" data-tour="map-search">
         <div className="flex">
           <div className="relative flex-1">
             <input

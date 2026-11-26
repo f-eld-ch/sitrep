@@ -633,5 +633,157 @@
     "revokeFailed": "Revoca del ruolo predefinito non riuscita.",
     "grantFailed": "Assegnazione del ruolo predefinito non riuscita.",
     "roleChangeFailed": "Modifica del ruolo predefinito non riuscita."
+  },
+  "tour": {
+    "start": "Avvia il tour",
+    "next": "Avanti",
+    "previous": "Indietro",
+    "done": "Fine",
+    "close": "Chiudi",
+    "progress": "{{current}} di {{total}}",
+    "welcome": {
+      "title": "Benvenuti in sitrep",
+      "description": "Questo breve tour le mostra le funzioni principali. Ogni pagina ha il suo tour; può riavviarlo in qualsiasi momento con il punto interrogativo nella barra di navigazione."
+    },
+    "incidentCreate": {
+      "title": "Creare un incidente",
+      "description": "Un incidente raccoglie tutto ciò che riguarda un intervento: giornale d’intervento, aggiornamento grafico, mezzi e persone."
+    },
+    "incidentFilter": {
+      "title": "Incidenti chiusi",
+      "description": "Gli incidenti chiusi sono nascosti. Qui può mostrarli."
+    },
+    "incidentCard": {
+      "title": "Un incidente",
+      "description": "Ogni scheda mostra nome, luogo e apertura di un incidente. Il lucchetto indica se l’accesso è limitato."
+    },
+    "incidentEnter": {
+      "title": "Accedere a un incidente",
+      "description": "Da qui accede all’incidente e arriva alla sua dashboard."
+    },
+    "navHelp": {
+      "title": "Aiuto",
+      "description": "Il punto interrogativo riavvia il tour della pagina attuale."
+    },
+    "navSettings": {
+      "title": "Impostazioni",
+      "description": "Qui trova la versione, il suo account, il tema chiaro o scuro, la lingua, la documentazione e la disconnessione."
+    },
+    "dashboardIntro": {
+      "title": "Dashboard",
+      "description": "La dashboard le dà una panoramica dell’incidente: notizie chiave, aggiornamento grafico, persone e mezzi."
+    },
+    "dashboardMessages": {
+      "title": "Notizie chiave",
+      "description": "Qui compaiono le notizie chiave già smistate. Ne selezioni una per vederla per intero sopra la mappa."
+    },
+    "dashboardMap": {
+      "title": "Aggiornamento grafico",
+      "description": "L’aggiornamento grafico dell’incidente. Clicchi su un oggetto per vedere i messaggi per cui è stato disegnato."
+    },
+    "timeline": {
+      "title": "Cronologia",
+      "description": "Con il cursore torna a un momento precedente dell’incidente. Tutto a destra vede di nuovo la situazione attuale."
+    },
+    "dashboardKpis": {
+      "title": "Persone e mezzi",
+      "description": "Il numero di persone registrate e i mezzi impiegati per formazione."
+    },
+    "navIncident": {
+      "title": "Incidente",
+      "description": "Da questo menu raggiunge la dashboard e modifica l’incidente."
+    },
+    "navJournal": {
+      "title": "Giornale d’intervento",
+      "description": "Il giornale d’intervento con tutti i messaggi. Nel menu trova l’editor, per registrare i messaggi, e il triage."
+    },
+    "navResources": {
+      "title": "Mezzi",
+      "description": "I mezzi mobilitati e impiegati per l’incidente."
+    },
+    "navCasualties": {
+      "title": "Persone",
+      "description": "Dispersi, morti, feriti, senzatetto e persone intrappolate, come registrati durante il triage."
+    },
+    "navMap": {
+      "title": "Aggiornamento grafico",
+      "description": "L’aggiornamento grafico a tutta pagina, per disegnare. Nel menu trova la carta informativa."
+    },
+    "navBurger": {
+      "title": "Menu",
+      "description": "Sugli schermi piccoli, la navigazione si trova dietro questo pulsante."
+    },
+    "journalIntro": {
+      "title": "Giornale d’intervento",
+      "description": "Tutti i messaggi dell’incidente, i più recenti in alto. L’elenco si aggiorna da solo."
+    },
+    "messageFilters": {
+      "title": "Filtri",
+      "description": "Può filtrare i messaggi per stato di triage, priorità e settore."
+    },
+    "journalMessage": {
+      "title": "Un messaggio",
+      "description": "Ogni messaggio mostra numero, mittente, destinatario, ora, contenuto e i settori assegnati."
+    },
+    "editorIntro": {
+      "title": "Editor",
+      "description": "A sinistra registra i nuovi messaggi, a destra trova tutti i messaggi precedenti dell’incidente."
+    },
+    "editorMedium": {
+      "title": "Mezzo di comunicazione",
+      "description": "Scelga come è arrivato il messaggio. I campi di inserimento si adattano."
+    },
+    "editorForm": {
+      "title": "Registrare un messaggio",
+      "description": "Inserisca mittente, destinatario e contenuto e, se serve, alleghi dei file. Sotto vede un’anteprima del messaggio."
+    },
+    "editorList": {
+      "title": "Messaggi precedenti",
+      "description": "Può filtrare i messaggi per stato di triage, priorità e settore. «Modifica» carica un messaggio nell’editor per correggerlo."
+    },
+    "editorPrint": {
+      "title": "Stampa",
+      "description": "Stampa i messaggi filtrati come tabella."
+    },
+    "triageIntro": {
+      "title": "Triage",
+      "description": "Nel triage elabora i messaggi ricevuti: assegna i settori, registra persone e mezzi."
+    },
+    "triageStack": {
+      "title": "Messaggi",
+      "description": "I messaggi dell’incidente. Il più vecchio non ancora smistato è già selezionato."
+    },
+    "triageFilters": {
+      "title": "Filtri",
+      "description": "Mostri solo i messaggi non smistati o solo le notizie chiave."
+    },
+    "triageSteps": {
+      "title": "Passi",
+      "description": "Il triage di un messaggio la guida attraverso questi passi. «Avanti» porta al successivo."
+    },
+    "triageKeys": {
+      "title": "Scorciatoie da tastiera",
+      "description": "Con la tastiera si fa prima. Qui trova le scorciatoie."
+    },
+    "mapIntro": {
+      "title": "Aggiornamento grafico",
+      "description": "Qui disegna la situazione sulla mappa. Clicchi su un oggetto per vedere i messaggi per cui è stato disegnato."
+    },
+    "mapSearch": {
+      "title": "Ricerca",
+      "description": "Cerchi luoghi e indirizzi e vada direttamente lì."
+    },
+    "mapDraw": {
+      "title": "Disegnare",
+      "description": "Disegni punti, linee e superfici sul livello attivo, poi assegni un simbolo all’oggetto."
+    },
+    "mapLayers": {
+      "title": "Livelli",
+      "description": "Scelga il livello su cui disegna, mostri o nasconda i livelli e aggiunga livelli WMS."
+    },
+    "mapStyle": {
+      "title": "Mappe",
+      "description": "Cambi la mappa di base."
+    }
   }
 }

@@ -7,6 +7,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Spinner } from "components";
+import { useTour } from "components/tour/Tour";
+import { journalMessagesTour } from "components/tour/tours";
 import { Button, Notification, PageTitle } from "components/ui";
 import { memo, useEffect, useRef } from "react";
 import { useState } from "react";
@@ -27,6 +29,8 @@ function List(props: {
   showControls: boolean;
   autoScroll?: boolean;
   setEditorMessage?: (message: Message | undefined) => void;
+  /** Whether the page's tour is this list's; the editor, which also shows it, has its own. */
+  tour?: boolean;
 }) {
   const { t } = useTranslation();
   const { incidentId } = useParams();
@@ -51,6 +55,8 @@ function List(props: {
     }
   }, [autoScroll]);
 
+  useTour(props.tour ? "journal-messages" : null, journalMessagesTour(t));
+
   if (result.status === "error") {
     return (
       <Notification variant="danger" light>
@@ -74,7 +80,7 @@ function List(props: {
     <>
       <div className="print:hidden">
         <PageTitle className="mb-3">{t("journal")}</PageTitle>
-        <div className="mb-3 flex flex-wrap items-center gap-2">
+        <div className="mb-3 flex flex-wrap items-center gap-2" data-tour="message-filters">
           {/* Triage filter */}
           <div className="group relative">
             <span className="pointer-events-none absolute inset-y-0 left-0 flex w-8 items-center justify-center text-xs text-fg-muted/50 transition-colors group-focus-within:text-fg-muted group-hover:text-fg-muted">
@@ -162,6 +168,7 @@ function List(props: {
               variant="primary"
               size="xs"
               className="ml-auto"
+              data-tour="message-print"
               onClick={() => handlePrint()}
             >
               <FontAwesomeIcon icon={faPrint} />
@@ -171,7 +178,7 @@ function List(props: {
         </div>
       </div>
 
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3" data-tour="message-list">
         <MemoMessages
           messages={messages}
           divisions={divisions}

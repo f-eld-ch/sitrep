@@ -38,6 +38,8 @@ import { resourceStateAt } from "./resourceSnapshot";
 import { Button, Notification, Tag } from "components/ui";
 import type { TagVariant } from "components/ui/Tag";
 import { Spinner } from "components";
+import { useTour } from "components/tour/Tour";
+import { triageTour } from "components/tour/tours";
 import {
   useIncidentMessages,
   useTriageMessage,
@@ -99,6 +101,7 @@ function Stepper({
   return (
     <nav
       aria-label="steps"
+      data-tour="triage-steps"
       className="scrollbar-none flex shrink-0 flex-col items-center border-r border-border px-3 py-4 lg:w-full lg:flex-row lg:items-center lg:gap-1 lg:overflow-x-auto lg:border-r-0 lg:px-5 lg:py-3"
     >
       {steps.map((step, idx) => {
@@ -912,6 +915,7 @@ export interface TriageViewProps {
 function TriageView({ filters, initialStrategy = "oldest-pending" }: TriageViewProps) {
   const { incidentId } = useParams();
   const { t } = useTranslation();
+  useTour("journal-triage", triageTour(t));
   const { state: incidentState } = useContext(IncidentContext);
   const incidentIsClosed = incidentState.incident?.closedAt != null;
   const [, startTransition] = useTransition();

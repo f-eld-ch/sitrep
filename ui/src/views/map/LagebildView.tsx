@@ -1,5 +1,8 @@
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
+import { useTour } from "components/tour/Tour";
+import { mapTour } from "components/tour/tours";
 import { useIncidentMessages } from "api/message";
 import { FilterableMessageStack } from "views/journal/FilterableMessageStack";
 import { Map as IncidentMap } from "./index";
@@ -15,6 +18,8 @@ const SIDE_STACK_POLL_MS = 30_000;
  */
 export default function LagebildView() {
   const { incidentId } = useParams();
+  const { t } = useTranslation();
+  useTour("incident-map", mapTour(t));
   // The selected feature and the incident it belongs to: in a parent incident the map shows the
   // layers of its sub-incidents, and the feature's messages are in the incident that drew it.
   const [feature, setFeature] = useState<{ id: string; incidentId?: string } | undefined>();

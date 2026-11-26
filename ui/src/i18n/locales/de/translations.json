@@ -633,5 +633,157 @@
     "revokeFailed": "Standard-Rolle konnte nicht entzogen werden.",
     "grantFailed": "Standard-Rolle konnte nicht vergeben werden.",
     "roleChangeFailed": "Standard-Rolle konnte nicht geändert werden."
+  },
+  "tour": {
+    "start": "Rundgang starten",
+    "next": "Weiter",
+    "previous": "Zurück",
+    "done": "Fertig",
+    "close": "Schliessen",
+    "progress": "{{current}} von {{total}}",
+    "welcome": {
+      "title": "Willkommen bei sitrep",
+      "description": "Dieser kurze Rundgang zeigt Ihnen die wichtigsten Funktionen. Jede Seite hat ihren eigenen Rundgang; über das Fragezeichen in der Navigation starten Sie ihn jederzeit erneut."
+    },
+    "incidentCreate": {
+      "title": "Ereignis erstellen",
+      "description": "Ein Ereignis bündelt alles zu einem Einsatz: Einsatzjournal, Lagebild, Mittel und Personen."
+    },
+    "incidentFilter": {
+      "title": "Geschlossene Ereignisse",
+      "description": "Geschlossene Ereignisse sind ausgeblendet. Hier blenden Sie sie ein."
+    },
+    "incidentCard": {
+      "title": "Ein Ereignis",
+      "description": "Jede Karte zeigt Name, Ort und Eröffnung eines Ereignisses. Das Schloss zeigt, ob der Zugriff eingeschränkt ist."
+    },
+    "incidentEnter": {
+      "title": "Ereignis betreten",
+      "description": "Hier betreten Sie das Ereignis und gelangen zu seinem Dashboard."
+    },
+    "navHelp": {
+      "title": "Hilfe",
+      "description": "Über das Fragezeichen starten Sie den Rundgang der aktuellen Seite erneut."
+    },
+    "navSettings": {
+      "title": "Einstellungen",
+      "description": "Hier finden Sie Version, Benutzerkonto, helles oder dunkles Design, Sprache, Benutzerhandbuch und die Abmeldung."
+    },
+    "dashboardIntro": {
+      "title": "Dashboard",
+      "description": "Das Dashboard gibt Ihnen den Überblick über das Ereignis: wichtige Meldungen, Lagebild sowie Personen und Mittel."
+    },
+    "dashboardMessages": {
+      "title": "Wichtige Meldungen",
+      "description": "Hier erscheinen die triagierten Schlüsselnachrichten. Wenn Sie eine auswählen, wird sie über dem Lagebild vollständig angezeigt."
+    },
+    "dashboardMap": {
+      "title": "Lagebild",
+      "description": "Das Lagebild des Ereignisses. Wenn Sie auf ein Objekt klicken, sehen Sie die Meldungen, zu denen es gezeichnet wurde."
+    },
+    "timeline": {
+      "title": "Zeitachse",
+      "description": "Mit dem Regler blenden Sie zu einem früheren Zeitpunkt des Ereignisses zurück. Ganz rechts sehen Sie wieder den aktuellen Stand."
+    },
+    "dashboardKpis": {
+      "title": "Personen und Mittel",
+      "description": "Die Zahlen der erfassten Personen und die eingesetzten Mittel nach Formation."
+    },
+    "navIncident": {
+      "title": "Ereignis",
+      "description": "Über dieses Menü erreichen Sie das Dashboard und bearbeiten das Ereignis."
+    },
+    "navJournal": {
+      "title": "Einsatzjournal",
+      "description": "Das Einsatzjournal mit allen Meldungen. Im Menü finden Sie den Editor, um Meldungen zu erfassen, und die Triage."
+    },
+    "navResources": {
+      "title": "Mittel",
+      "description": "Die aufgebotenen und eingesetzten Mittel des Ereignisses."
+    },
+    "navCasualties": {
+      "title": "Personenübersicht",
+      "description": "Vermisste, Tote, Verletzte, Obdachlose und Eingeschlossene, wie sie bei der Triage erfasst wurden."
+    },
+    "navMap": {
+      "title": "Lagebild",
+      "description": "Das Lagebild auf der ganzen Seite, zum Zeichnen. Im Menü finden Sie die Nachrichtenkarte."
+    },
+    "navBurger": {
+      "title": "Menü",
+      "description": "Auf kleinen Bildschirmen finden Sie die Navigation hinter dieser Schaltfläche."
+    },
+    "journalIntro": {
+      "title": "Einsatzjournal",
+      "description": "Hier sehen Sie alle Meldungen des Ereignisses, die neuesten zuoberst. Die Liste aktualisiert sich von selbst."
+    },
+    "messageFilters": {
+      "title": "Filter",
+      "description": "Filtern Sie die Meldungen nach Triage-Status, Priorität und Ressort."
+    },
+    "journalMessage": {
+      "title": "Eine Meldung",
+      "description": "Jede Meldung zeigt Nummer, Absender, Empfänger, Zeit und Inhalt sowie die zugewiesenen Ressorts."
+    },
+    "editorIntro": {
+      "title": "Editor",
+      "description": "Links erfassen Sie neue Meldungen, rechts sehen Sie alle bisherigen Meldungen des Ereignisses."
+    },
+    "editorMedium": {
+      "title": "Kommunikationsmittel",
+      "description": "Wählen Sie, wie die Meldung eingegangen ist. Die Eingabefelder passen sich an."
+    },
+    "editorForm": {
+      "title": "Meldung erfassen",
+      "description": "Erfassen Sie Absender, Empfänger und Inhalt und hängen Sie bei Bedarf Dateien an. Darunter sehen Sie eine Vorschau der Meldung."
+    },
+    "editorList": {
+      "title": "Bisherige Meldungen",
+      "description": "Filtern Sie die Meldungen nach Triage-Status, Priorität und Ressort. Über «Bearbeiten» laden Sie eine Meldung zur Korrektur in den Editor."
+    },
+    "editorPrint": {
+      "title": "Drucken",
+      "description": "Druckt die gefilterten Meldungen als Tabelle."
+    },
+    "triageIntro": {
+      "title": "Triage",
+      "description": "In der Triage arbeiten Sie die eingegangenen Meldungen ab: Ressorts zuweisen, Personen und Mittel erfassen."
+    },
+    "triageStack": {
+      "title": "Meldungen",
+      "description": "Die Meldungen des Ereignisses. Die älteste noch nicht triagierte ist bereits ausgewählt."
+    },
+    "triageFilters": {
+      "title": "Filter",
+      "description": "Zeigen Sie nur nicht triagierte Meldungen oder nur Schlüsselnachrichten an."
+    },
+    "triageSteps": {
+      "title": "Schritte",
+      "description": "Die Triage einer Meldung führt durch diese Schritte. Mit «Weiter» gelangen Sie zum nächsten."
+    },
+    "triageKeys": {
+      "title": "Tastenkombinationen",
+      "description": "Mit der Tastatur geht es schneller. Hier sehen Sie die Tastenkombinationen."
+    },
+    "mapIntro": {
+      "title": "Lagebild",
+      "description": "Hier zeichnen Sie die Lage auf der Karte. Wenn Sie auf ein Objekt klicken, sehen Sie die Meldungen, zu denen es gezeichnet wurde."
+    },
+    "mapSearch": {
+      "title": "Suche",
+      "description": "Suchen Sie nach Orten und Adressen und springen Sie direkt dorthin."
+    },
+    "mapDraw": {
+      "title": "Zeichnen",
+      "description": "Zeichnen Sie Punkte, Linien und Flächen auf dem aktiven Layer. Danach weisen Sie dem Objekt ein Symbol zu."
+    },
+    "mapLayers": {
+      "title": "Layer",
+      "description": "Wählen Sie den Layer, auf dem Sie zeichnen, blenden Sie Layer ein oder aus und fügen Sie WMS-Layer hinzu."
+    },
+    "mapStyle": {
+      "title": "Karten",
+      "description": "Wechseln Sie die Basiskarte."
+    }
   }
 }

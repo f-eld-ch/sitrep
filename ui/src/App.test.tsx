@@ -31,6 +31,9 @@ vi.mock("utils", () => ({
 }));
 vi.mock("utils/useDarkMode", () => ({ useDarkMode }));
 vi.mock("components", () => ({ Spinner: () => <p>spinner</p> }));
+vi.mock("components/tour/Tour", () => ({
+  TourProvider: ({ children }: { children: ReactNode }) => <>{children}</>,
+}));
 
 // Each screen is tested on its own; here only the routing between them matters.
 vi.mock("views/Layout", () => ({

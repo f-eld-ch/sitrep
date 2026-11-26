@@ -98,6 +98,7 @@ export function TimelineSlider({
 
   return (
     <div
+      data-tour="timeline"
       className={clsx(
         "flex w-full flex-col gap-1.5 text-xs text-fg",
         framed && "rounded-lg border border-border bg-bg/95 px-3 py-2 shadow-lg backdrop-blur",
