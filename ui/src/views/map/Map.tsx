@@ -1170,7 +1170,7 @@ export interface FeatureEvent {
   draft?: boolean;
   /** The user pressed save in the panel: nothing is sent when nothing differs from what is saved. */
   save?: boolean;
-  /** When a property edit takes effect on the timeline; absent for "now" (or the message's time). */
+  /** The feature's time when the user picked one; absent for "now" (or the message's time). */
   effectiveAt?: Date;
 }
 

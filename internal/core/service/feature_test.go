@@ -272,11 +272,10 @@ func TestFeatureService_EffectiveAtOnStandardLayer(t *testing.T) {
 		require.NoError(t, err)
 	})
 
-	t.Run("a future effective time is accepted too", func(t *testing.T) {
-		state, err := f.features.PlaceFeature(ctx(), f.incidentID, f.layerID, "q",
+	t.Run("a future effective time is rejected", func(t *testing.T) {
+		_, err := f.features.PlaceFeature(ctx(), f.incidentID, f.layerID, "q",
 			testGeometry, testProperties, inbound.FeatureChange{EffectiveAt: &future}, testActor)
-		require.NoError(t, err)
-		assert.Equal(t, future, state.PlacedAt)
+		require.ErrorIs(t, err, shared.ErrInvalidInput)
 	})
 }
 

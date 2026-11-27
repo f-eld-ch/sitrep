@@ -342,11 +342,11 @@ describe("FeatureForm time", () => {
     expect(screen.queryByLabelText("Gültig ab")).not.toBeInTheDocument();
   });
 
-  it("changes a saved feature as of now unless another time is picked", () => {
+  it("changes a saved feature as of now unless another time is picked, never in the future", () => {
     renderPopup(point({ icon: aliasFor("1101") }), { changeTime: {} });
 
     expect(label("Gültig ab")).not.toHaveAttribute("min");
-    expect(label("Gültig ab")).not.toHaveAttribute("max");
+    expect(label("Gültig ab")).toHaveAttribute("max");
     save();
 
     expect(onUpdate.mock.calls[0][0].effectiveAt).toBeUndefined();
@@ -372,7 +372,7 @@ describe("FeatureForm time", () => {
     expect(onUpdate.mock.calls[0][0].effectiveAt).toBeUndefined();
   });
 
-  it("dates the change at the picked time, also before the placement", () => {
+  it("sends the picked time, also before the placement", () => {
     renderPopup(point({ icon: aliasFor("1101") }), {
       changeTime: { placedAt: new Date(2026, 0, 2, 9, 30) },
     });

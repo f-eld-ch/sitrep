@@ -192,37 +192,92 @@ func TestFeature_EffectiveTime(t *testing.T) {
 		assert.Equal(t, newer, f.Geometry(), "state is the latest by effective time")
 	})
 
-	t.Run("a change before the placement of a free feature moves the placement back", func(t *testing.T) {
+	t.Run("a time the user sets before the placement moves the placement back", func(t *testing.T) {
 		f := placeAt(t, t1405, nil)
-		require.NoError(t, f.Restyle(props, feature.ChangeContext{EffectiveAt: t1400}, actor, drawnLater))
+		require.NoError(
+			t,
+			f.Restyle(props, feature.ChangeContext{EffectiveAt: t1400, SetsTime: true}, actor, drawnLater),
+		)
 
 		assert.Equal(t, t1400, f.PlacedAt())
 		assert.Equal(t, props, f.Properties())
 
 		// Moving it now is not before the placement any more, and records nothing more.
 		before := len(f.Root().PendingEvents())
-		require.NoError(t, f.Move(geom, feature.ChangeContext{EffectiveAt: t1400}, actor, drawnLater))
+		require.NoError(t, f.Move(geom, feature.ChangeContext{EffectiveAt: t1400, SetsTime: true}, actor, drawnLater))
 		assert.Len(t, f.Root().PendingEvents(), before+1)
+	})
+
+	t.Run("a change before the placement without a time the user sets is rejected", func(t *testing.T) {
+		f := placeAt(t, t1405, nil)
+
+		err := f.Restyle(props, feature.ChangeContext{EffectiveAt: t1400}, actor, drawnLater)
+		require.ErrorIs(t, err, shared.ErrBeforeFeaturePlaced)
+		assert.Equal(t, t1405, f.PlacedAt())
 	})
 
 	t.Run("a feature that was changed since keeps the time of those changes", func(t *testing.T) {
 		f := placeAt(t, t1405, nil)
 		later := map[string]any{"type": "Point", "coordinates": []any{9.0, 47.0}}
 		require.NoError(t, f.Move(later, feature.ChangeContext{EffectiveAt: t1410}, actor, drawnLater))
-		require.NoError(t, f.Restyle(props, feature.ChangeContext{EffectiveAt: t1400}, actor, drawnLater))
+		require.NoError(
+			t,
+			f.Restyle(props, feature.ChangeContext{EffectiveAt: t1400, SetsTime: true}, actor, drawnLater),
+		)
 
 		assert.Equal(t, t1400, f.PlacedAt())
 		assert.Equal(t, later, f.Geometry(), "the later geometry stays")
 	})
 
-	t.Run("a removed feature cannot be backdated", func(t *testing.T) {
+	t.Run("a time the user sets moves the placement later and raises older changes to it", func(t *testing.T) {
+		f := placeAt(t, t1400, nil)
+		later := map[string]any{"type": "Point", "coordinates": []any{9.0, 47.0}}
+		require.NoError(t, f.Move(later, feature.ChangeContext{EffectiveAt: t1405}, actor, drawnLater))
+
+		require.NoError(
+			t,
+			f.Restyle(props, feature.ChangeContext{EffectiveAt: t1410, SetsTime: true}, actor, drawnLater),
+		)
+
+		assert.Equal(t, t1410, f.PlacedAt())
+		assert.Equal(t, props, f.Properties())
+		assert.Equal(t, later, f.Geometry(), "the geometry change is older than the new start, but stays")
+
+		// A change dated before the new start is history only, it does not undo the geometry.
+		other := map[string]any{"type": "Point", "coordinates": []any{1.0, 1.0}}
+		require.NoError(t, f.Move(other, feature.ChangeContext{EffectiveAt: t1410}, actor, drawnLater))
+		assert.Equal(t, other, f.Geometry())
+	})
+
+	t.Run("a time the user sets that is the placement already records nothing", func(t *testing.T) {
+		f := placeAt(t, t1405, nil)
+		before := len(f.Root().PendingEvents())
+
+		require.NoError(
+			t,
+			f.Restyle(props, feature.ChangeContext{EffectiveAt: t1405, SetsTime: true}, actor, drawnLater),
+		)
+		assert.Len(t, f.Root().PendingEvents(), before+1, "only the change itself")
+	})
+
+	t.Run("a time the user sets does not move a feature drawn for a message", func(t *testing.T) {
+		f := placeAt(t, t1405, &msgA)
+
+		require.NoError(
+			t,
+			f.Restyle(props, feature.ChangeContext{EffectiveAt: t1410, SetsTime: true}, actor, drawnLater),
+		)
+		assert.Equal(t, t1405, f.PlacedAt())
+	})
+
+	t.Run("a removed feature cannot be re-dated", func(t *testing.T) {
 		f := placeAt(t, t1405, nil)
 		require.NoError(
 			t,
 			f.Remove(shared.DeleteReasonManual, feature.ChangeContext{EffectiveAt: t1410}, actor, drawnLater),
 		)
 
-		err := f.Restyle(props, feature.ChangeContext{EffectiveAt: t1400}, actor, drawnLater)
+		err := f.Restyle(props, feature.ChangeContext{EffectiveAt: t1400, SetsTime: true}, actor, drawnLater)
 		require.ErrorIs(t, err, shared.ErrNotFound)
 		assert.Equal(t, t1405, f.PlacedAt())
 	})

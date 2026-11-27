@@ -23,9 +23,13 @@ import (
 
 // ChangeContext says when a change takes effect on the map timeline and which message
 // it was drawn for. A zero EffectiveAt means "at the time the command runs".
+//
+// SetsTime says the user picked EffectiveAt as the feature's time: the placement moves there, earlier
+// or later, instead of the change being dated at EffectiveAt after the placement.
 type ChangeContext struct {
 	EffectiveAt time.Time
 	MessageID   *shared.MessageID
+	SetsTime    bool
 }
 
 func (c ChangeContext) effective(at time.Time) time.Time {
@@ -181,12 +185,12 @@ func (f *Feature) Restore(change ChangeContext, actor string, at time.Time) erro
 	return nil
 }
 
-// allowChange checks that a change may take effect at its time. A change dated before the feature
-// was placed moves the placement back to that time, so the feature is there from then on; not for a
+// allowChange checks that a change may take effect at its time. A change that sets the feature's time
+// moves the placement there, earlier or later, so the feature is there from then on; not for a
 // feature drawn for a message, whose time is the message's.
 func (f *Feature) allowChange(change ChangeContext, actor string, at time.Time) error {
 	eff := change.effective(at)
-	if !f.removed && eff.Before(f.placedAt) && len(f.messageIDs) == 0 {
+	if change.SetsTime && !f.removed && len(f.messageIDs) == 0 && !eff.Equal(f.placedAt) {
 		eventsourcing.TrackChange(f, Backdated{EffectiveAt: &eff}, at, meta(actor))
 	}
 
@@ -217,12 +221,13 @@ func (f *Feature) Transition(e eventsourcing.Event) error {
 		f.linkMessage(d.MessageID)
 	case Backdated:
 		eff := effectiveTime(d.EffectiveAt, e.OccurredAt)
-		// What was never changed since the placement starts with it.
-		if f.geometryAt.Equal(f.placedAt) {
+		// What was never changed since the placement starts with it, and nothing is older than the
+		// feature itself: a change dated before a later placement counts from it.
+		if f.geometryAt.Equal(f.placedAt) || f.geometryAt.Before(eff) {
 			f.geometryAt = eff
 		}
 
-		if f.propertiesAt.Equal(f.placedAt) {
+		if f.propertiesAt.Equal(f.placedAt) || f.propertiesAt.Before(eff) {
 			f.propertiesAt = eff
 		}
 

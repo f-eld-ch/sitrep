@@ -374,7 +374,14 @@ func (s *FeatureService) resolveChange(
 			return feature.ChangeContext{EffectiveAt: now}, nil
 		}
 
-		return feature.ChangeContext{EffectiveAt: *change.EffectiveAt}, nil
+		if change.EffectiveAt.After(now) {
+			return feature.ChangeContext{}, shared.ValidationError{
+				Field: "effectiveAt", Message: "must not be in the future",
+			}
+		}
+
+		// The time the user picks is the feature's time: the placement moves to it.
+		return feature.ChangeContext{EffectiveAt: *change.EffectiveAt, SetsTime: true}, nil
 	}
 
 	if !isMapLayer {

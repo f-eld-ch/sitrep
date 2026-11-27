@@ -30,7 +30,7 @@ func NewLayerFeaturesHandler(pool *pgxpool.Pool) *LayerFeaturesHandler {
 }
 
 func (h *LayerFeaturesHandler) Name() string { return "readmodel.layer_features" }
-func (h *LayerFeaturesHandler) Version() int { return 6 }
+func (h *LayerFeaturesHandler) Version() int { return 7 }
 func (h *LayerFeaturesHandler) Reset(ctx context.Context) error {
 	_, err := h.pool.Exec(ctx, `TRUNCATE readmodel.layer_features, readmodel.feature_change`)
 	return err
@@ -261,12 +261,13 @@ func recordFeatureChange(ctx context.Context, tx pgx.Tx, e eventsourcing.Event) 
 		return false, err
 	}
 
-	// A backdating moves the placement back; it is not a change of its own. Setting the time is
-	// idempotent, and the feature's other changes are all later than the placement it replaces.
+	// A re-dating (the Backdated event) moves the placement; it is not a change of its own. Setting the time is
+	// idempotent, and so is raising the changes that are older than it.
 	if c.Kind == featurechange.Backdated {
+		// The placement moves to the time, and nothing is older than the feature itself.
 		_, err := tx.Exec(ctx, `
 			UPDATE readmodel.feature_change SET effective_at = $2
-			WHERE feature_id = $1 AND change = 'placed'`, e.StreamID, c.EffectiveAt)
+			WHERE feature_id = $1 AND (change = 'placed' OR effective_at < $2)`, e.StreamID, c.EffectiveAt)
 
 		return false, err
 	}

@@ -46,12 +46,12 @@ export interface FeatureFormProps {
   onUpdate: (e: {
     features: Feature<Geometry, GeoJsonProperties>[];
     action: string;
-    /** When the change takes effect on the timeline; absent for "now". */
+    /** The feature's time, when the user picked one (never in the future); absent for "now". */
     effectiveAt?: Date;
     /** The user pressed save: everything drafted so far is sent now. */
     save?: boolean;
   }) => void;
-  /** Set on a saved feature of the free map: the form then offers the time the change takes effect. */
+  /** Set on a saved feature of the free map: the form then offers the time of the feature. */
   changeTime?: {
     /** When the feature was placed on the timeline: what the time field shows to begin with. */
     placedAt?: Date;
@@ -161,10 +161,10 @@ export function FeatureForm({
     );
   }, [canRotate, isUnSign, selectedFeature, values]);
 
-  // The time a new feature, or a change to a saved one, takes effect at: now unless the user
-  // picks another one. A saved feature shows the time it was placed at to begin with; leaving it
-  // alone changes it now, as before, and picking another time dates the change then (or, before the
-  // placement, moves the start of the feature back).
+  // The time of a new feature, or of a saved one that is changed: now unless the user picks another
+  // one. A saved feature shows the time it was placed at to begin with; leaving it alone changes it
+  // now, as before, and picking another time (not in the future) moves the feature there, earlier
+  // or later.
   const [openedAt] = useState(() => currentTime());
   const [startInput] = useState(() => toLocalInput(new Date(changeTime?.placedAt ?? openedAt)));
   const [effectiveInput, setEffectiveInput] = useState(startInput);
@@ -468,6 +468,7 @@ export function FeatureForm({
             id={`${baseId}-effective`}
             type="datetime-local"
             className="w-full rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-900 focus:outline-none"
+            max={toLocalInput(new Date(openedAt))}
             value={effectiveInput}
             onChange={(e) => setEffectiveInput(e.target.value)}
           />

@@ -192,7 +192,7 @@
     },
     "changeTime": {
       "label": "Valable dès",
-      "hint": "La modification s'applique dès ce moment sur la ligne du temps. S'il précède le dessin de l'objet, l'objet commence dès ce moment."
+      "hint": "L'objet est placé à ce moment sur la ligne du temps, plus tôt ou plus tard, mais pas dans le futur."
     },
     "selectionRing": "Mettre en évidence l'objet sélectionné",
     "pending": {

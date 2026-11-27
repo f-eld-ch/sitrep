@@ -39,8 +39,8 @@ const BabsIconController = () => {
   );
   const pending = usePendingFeature(selectedFeature?.id?.toString());
   const { asOf, drawingMessage } = useContext(MapTimeContext);
-  // A saved feature on the free map can be changed as of an earlier time; drawing for a message
-  // always takes the message's time.
+  // A saved feature on the free map can be given another time, not in the future; drawing for a
+  // message always takes the message's time.
   const placedAt = state.layers
     .flatMap((l) => l.layer?.features ?? [])
     .find((f) => f?.id === selectedFeature?.id)?.placedAt;

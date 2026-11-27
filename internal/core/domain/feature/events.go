@@ -22,9 +22,10 @@ type Placed struct {
 	MessageID   *shared.MessageID `json:"messageId,omitempty"`
 }
 
-// Backdated moves the start of the feature back in time: it appears on the map timeline from
-// EffectiveAt instead of from when it was first placed. A change dated before the placement
-// records it first, so the change takes effect from its own time.
+// Backdated moves the start of the feature, earlier or later (the name is historic): it appears on
+// the map timeline from EffectiveAt instead of from when it was first placed. Changes dated before
+// the new start count from it. A change that sets the time records it first, so the change takes
+// effect from its own time.
 type Backdated struct {
 	EffectiveAt *time.Time `json:"effectiveAt,omitempty"`
 }

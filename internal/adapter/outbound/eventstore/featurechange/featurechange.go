@@ -21,7 +21,7 @@ type Kind string
 
 const (
 	Placed Kind = "placed"
-	// Backdated is not a change of its own: it moves the placed change back in time.
+	// Backdated (historic name) is not a change of its own: it moves the placed change, earlier or later.
 	Backdated Kind = "backdated"
 	Moved     Kind = "moved"
 	Restyled  Kind = "restyled"
