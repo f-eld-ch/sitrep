@@ -276,6 +276,11 @@ function Layers({
             onToggle={() => setHighlightMessage((v) => !v)}
           />
         )}
+        {/* Which layer is active, and that it cannot be drawn on, next to where it is picked. The
+            corners above are taken by the search, the zoom and the draw tools. */}
+        {activeLayerCard && !readOnly && !embedded && !drawingMessage && (
+          <ActiveLayerCard inline layer={activeLayerCard} readOnly={!activeLayerDrawn} />
+        )}
         {(!readOnly || stayOnPreferredLayer) && <LayerControl />}
         <StyleController />
       </div>
@@ -285,10 +290,6 @@ function Layers({
 
       {/* Active Layer */}
       {activeLayer !== undefined && !readOnly && <ActiveLayer />}
-      {/* Which layer is active, and that it cannot be drawn on, where the layer is picked. */}
-      {activeLayerCard && !readOnly && !embedded && !drawingMessage && (
-        <ActiveLayerCard layer={activeLayerCard} readOnly={!activeLayerDrawn} />
-      )}
       {!readOnly && !drawingMessage?.locked && <BabsIconController />}
 
       {readOnly ? (
