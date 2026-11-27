@@ -1,3 +1,18 @@
+## [26.11.8](https://github.com/f-eld-ch/sitrep/compare/v26.11.7..v26.11.8) - 2026-11-27
+
+### 🐛 Bug Fixes
+
+- *(map)* Date a feature at the time given, and open messages of the active Nachrichtenkarte ([#2192](https://github.com/f-eld-ch/sitrep/issues/2192)) - ([44303b2](https://github.com/f-eld-ch/sitrep/commit/44303b2f208b818a81d399a74833c19d96a3aaaf))
+- *(ui)* Import the style type from maplibre-gl ([#2162](https://github.com/f-eld-ch/sitrep/issues/2162)) - ([2a2caa4](https://github.com/f-eld-ch/sitrep/commit/2a2caa48b2f25076058b94a98def63ed6126fec0))
+
+### ⚙️  Other
+
+- *(deps)* Bump react-router from 8.5.2 to 8.5.3 in /ui ([#2185](https://github.com/f-eld-ch/sitrep/issues/2185)) - ([24a2f83](https://github.com/f-eld-ch/sitrep/commit/24a2f832bb399991f68d690409a2d58f421e90d8))
+- *(deps)* Bump modernc.org/sqlite from 1.62.0 to 1.63.0 ([#2182](https://github.com/f-eld-ch/sitrep/issues/2182)) - ([45c4aac](https://github.com/f-eld-ch/sitrep/commit/45c4aac14ebbf987fe05643e4f66146b6cb1ca49))
+- *(deps)* Bump i18next from 27.2.7 to 27.2.9 in /ui ([#2186](https://github.com/f-eld-ch/sitrep/issues/2186)) - ([b164c10](https://github.com/f-eld-ch/sitrep/commit/b164c103f547c7a12271feed781623b9c1c8b88f))
+- *(deps)* Bump github.com/zitadel/oidc/v3 from 3.52.0 to 3.53.0 ([#2189](https://github.com/f-eld-ch/sitrep/issues/2189)) - ([81a8464](https://github.com/f-eld-ch/sitrep/commit/81a84647a0d0313e8ad0224edc073beef6de39ee))
+
+
 ## [26.11.7](https://github.com/f-eld-ch/sitrep/compare/v26.11.6..v26.11.7) - 2026-11-25
 
 ### 🐛 Bug Fixes
