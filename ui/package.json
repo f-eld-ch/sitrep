@@ -85,7 +85,7 @@
     "@graphql-codegen/cli": "^8.0.0",
     "@graphql-codegen/client-preset": "^7.0.1",
     "@graphql-codegen/schema-ast": "^7.0.0",
-    "@maplibre/maplibre-gl-style-spec": "^26.11.0",
+    "@maplibre/maplibre-gl-style-spec": "^27.0.0",
     "@tailwindcss/vite": "^4.3.5",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/jest-dom": "^8.0.0",
