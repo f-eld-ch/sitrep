@@ -2846,12 +2846,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@maplibre/geojson-vt@npm:^6.3.1":
-  version: 6.3.3
-  resolution: "@maplibre/geojson-vt@npm:6.3.3"
+"@maplibre/geojson-vt@npm:^7.0.1":
+  version: 7.0.1
+  resolution: "@maplibre/geojson-vt@npm:7.0.1"
   dependencies:
     kdbush: "npm:^4.1.0"
-  checksum: 10/1e03c023b86a988e35fb96ef617370d584e56568dd1c77b3eff7c64447dd8b6af0e39446db3cbdb43a3c6b3d55e5e9697c6c45b3a41e6dd234fec935e063717d
+  checksum: 10/a0fcbcde79a145237ad91f662a69af61c26be95c01bd52a72dcfc3cd28f844ab05f088d56d8949bd227876582b4f66b4b2341208ddcb8298da87967a9af4440f
   languageName: node
   linkType: hard
 
@@ -2873,7 +2873,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@maplibre/maplibre-gl-style-spec@npm:^26.11.0, @maplibre/maplibre-gl-style-spec@npm:^26.8.0":
+"@maplibre/maplibre-gl-style-spec@npm:^26.11.0":
   version: 26.11.0
   resolution: "@maplibre/maplibre-gl-style-spec@npm:26.11.0"
   dependencies:
@@ -8335,16 +8335,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"maplibre-gl@npm:6.19.0":
-  version: 6.19.0
-  resolution: "maplibre-gl@npm:6.19.0"
+"maplibre-gl@npm:6.20.0":
+  version: 6.20.0
+  resolution: "maplibre-gl@npm:6.20.0"
   dependencies:
     "@mapbox/point-geometry": "npm:^1.1.0"
     "@mapbox/tiny-sdf": "npm:^2.3.0"
     "@mapbox/unitbezier": "npm:^1.0.0"
     "@mapbox/vector-tile": "npm:^3.0.0"
-    "@maplibre/geojson-vt": "npm:^6.3.1"
-    "@maplibre/maplibre-gl-style-spec": "npm:^26.8.0"
+    "@maplibre/geojson-vt": "npm:^7.0.1"
+    "@maplibre/maplibre-gl-style-spec": "npm:^26.11.0"
     "@maplibre/mlt": "npm:^1.3.0"
     "@maplibre/vt-pbf": "npm:^4.3.3"
     "@types/geojson": "npm:^7946.0.16"
@@ -8353,12 +8353,12 @@ __metadata:
     gl-matrix: "npm:^3.4.4"
     kdbush: "npm:^4.1.0"
     murmurhash-js: "npm:^1.0.0"
-    pbf: "npm:^5.1.2"
+    pbf: "npm:^5.2.0"
     potpack: "npm:^2.1.0"
     quickselect: "npm:^3.0.0"
     tinyqueue: "npm:^3.0.0"
     zustand: "npm:^5.1.0"
-  checksum: 10/be020a31f631f1839991b77ebcc13a14324b09ab1a928053598a662de0d2c64196d13eec0fbb23108969fac4766e041736c4a6c663cc9789371fc20ab8cc3e60
+  checksum: 10/58746131d29709944b82374840167728593bec364bf49f9ca91dae70316b1894711fadbd7cccd0f2a88c5941cabb0b2e92b49d9c256b5deaac93f11a86b4d423
   languageName: node
   linkType: hard
 
@@ -9648,6 +9648,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"pbf@npm:^5.2.0":
+  version: 5.2.1
+  resolution: "pbf@npm:5.2.1"
+  dependencies:
+    protocol-buffers-schema: "npm:^3.6.1"
+  bin:
+    pbf: bin/pbf
+  checksum: 10/981630ce156f821c23a6efe1fc62d410abe42910f3c4c3809727dfee91f8914d64d2c14e2ab8584f6bd87b2db317b46a64f1486224663bfab6d650c540fc629e
+  languageName: node
+  linkType: hard
+
 "performance-now@npm:^2.1.0":
   version: 2.1.0
   resolution: "performance-now@npm:2.1.0"
@@ -9764,7 +9775,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"protocol-buffers-schema@npm:^3.3.1":
+"protocol-buffers-schema@npm:^3.3.1, protocol-buffers-schema@npm:^3.6.1":
   version: 3.6.1
   resolution: "protocol-buffers-schema@npm:3.6.1"
   checksum: 10/a7ca74e71227932f903feab9df8ffde80703b656fd024179b3a9439edb3907eca4c78f0cd6f47ad7698e832ae565a8df7585d9cedcc4f043794e6ba8e480cdec
@@ -10955,7 +10966,7 @@ __metadata:
     jsdom: "npm:^31.0.1"
     jspdf: "npm:^4.2.1"
     lodash: "npm:^4.18.1"
-    maplibre-gl: "npm:6.19.0"
+    maplibre-gl: "npm:6.20.0"
     ol: "npm:^10.11.0"
     oxfmt: "npm:^0.80.0"
     oxlint: "npm:^1.95.0"
