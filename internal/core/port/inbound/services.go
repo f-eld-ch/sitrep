@@ -192,14 +192,16 @@ type FeatureState struct {
 	Properties map[string]any
 	// MessageIDs are all messages that touched the feature, in first-linked order.
 	MessageIDs []shared.MessageID
-	// PlacedAt is when the feature first appeared on the map timeline; later changes do not move it.
+	// PlacedAt is when the feature first appeared on the map timeline. Later changes do not move it;
+	// a time the user gives a feature on the free map does, earlier or later.
 	PlacedAt time.Time
 }
 
 // FeatureChange says when a feature change takes effect on the map timeline.
 // Changes on the message map layer must carry a MessageID and take effect at that
 // message's time; changes on other layers may carry an explicit EffectiveAt (never in
-// the future). With neither, the change takes effect now.
+// the future), which is the feature's time: a move or restyle puts the placement there, earlier
+// or later (a removal or restore is only dated then). With neither, the change takes effect now.
 type FeatureChange struct {
 	MessageID   *shared.MessageID
 	EffectiveAt *time.Time

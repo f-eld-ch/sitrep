@@ -4,7 +4,6 @@ import { first } from "lodash";
 import { useCallback, useContext, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useMap } from "react-map-gl/maplibre";
-import { IncidentContext } from "utils";
 import { fireDrawEvent } from "../drawEvents";
 import { LayerContext } from "../LayerContext";
 import { MapTimeContext } from "../MapTimeContext";
@@ -40,15 +39,14 @@ const BabsIconController = () => {
   );
   const pending = usePendingFeature(selectedFeature?.id?.toString());
   const { asOf, drawingMessage } = useContext(MapTimeContext);
-  const { state: incidentState } = useContext(IncidentContext);
-  // A saved feature on the free map can be changed as of an earlier time; drawing for a message
-  // always takes the message's time.
+  // A saved feature on the free map can be given another time, not in the future; drawing for a
+  // message always takes the message's time.
   const placedAt = state.layers
     .flatMap((l) => l.layer?.features ?? [])
     .find((f) => f?.id === selectedFeature?.id)?.placedAt;
   const changeTime =
     pending === undefined && drawingMessage === undefined && asOf === undefined
-      ? { earliest: incidentState.incident?.createdAt, placedAt }
+      ? { placedAt }
       : undefined;
 
   const onUpdate = useCallback(

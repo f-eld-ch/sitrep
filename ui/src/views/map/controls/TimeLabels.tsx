@@ -11,8 +11,8 @@ const STYLE = createTimeLabelStyle();
 
 /**
  * The time each drawing first appeared, written on the map in the drawing's colour. It is the
- * time of the first message the drawing was made for; moving or restyling it later does not
- * change it. Same day as the timeline slider shows (or today when live): the clock time only.
+ * time of the first message the drawing was made for, or the time the user gave it on the free map;
+ * moving or restyling it later does not change it. Same day as the timeline slider shows (or today when live): the clock time only.
  */
 export function TimeLabels() {
   const { state } = useContext(LayerContext);

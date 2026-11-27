@@ -192,7 +192,7 @@
     },
     "changeTime": {
       "label": "Effective from",
-      "hint": "The change applies from this point on the timeline. If it is before the object was drawn, the object starts then."
+      "hint": "The object is placed at this point on the timeline, earlier or later, but not in the future."
     },
     "selectionRing": "Highlight the selected object",
     "pending": {
@@ -347,6 +347,7 @@
   },
   "layerControl": {
     "messageMapHint": "Drawn through messages",
+    "activeLayerReadOnly": "Read-only",
     "layers": "Layers",
     "currentIncidentLayers": "Current incident",
     "addLayer": "Add layer",

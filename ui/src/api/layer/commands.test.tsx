@@ -277,7 +277,30 @@ describe("useModifyFeature", () => {
       properties: { label: "new" },
       change: { effectiveAt: "2026-01-15T10:00:00.000Z" },
     });
+    // the time given is the feature's time, so the label follows it before the server answers
     expect(options.optimisticResponse).toEqual({
+      modifyFeature: {
+        id: "a",
+        geometry: point,
+        properties: { label: "new" },
+        placedAt: "2026-01-15T10:00:00.000Z",
+      },
+    });
+  });
+
+  it("does not guess the time of the feature when no time is given", async () => {
+    const mutate = await setupMutation({ modifyFeature: feature("a") });
+    const { result } = renderHook(() => useModifyFeature());
+
+    await result.current[0]({
+      id: "a",
+      properties: { label: "new" },
+      currentGeometry: point,
+      currentProperties: { label: "new" },
+      incidentId: "inc-1",
+    });
+
+    expect(mutate.mock.calls[0][0].optimisticResponse).toEqual({
       modifyFeature: { id: "a", geometry: point, properties: { label: "new" } },
     });
   });

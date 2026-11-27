@@ -657,6 +657,12 @@ the dev database — they will be lost on the next `migrate up` run.
   must reference a message and take effect at that message's time; the aggregate keeps the state
   that is latest by effective time. Events written before this existed have no `EffectiveAt` and
   fall back to their `OccurredAt`.
+  On the free map, a time the user gives a feature (`FeatureChange.EffectiveAt`, set to
+  `ChangeContext.SetsTime` by the service) is the feature's time: a move or restyle puts `placedAt`
+  there, earlier or later, through the `Backdated` event (a historic name; the event type is
+  persisted, do not rename it). The read models raise older change rows to it, so nothing is older
+  than the feature. The future is refused. Removal and restore are only dated at the time given and
+  do not re-date, and a feature drawn for a message keeps the message's time.
   A removed feature can be brought back with `Restored`, at or after its removal; the event carries
   the feature's state so the read models can place it again without a lookup.
 

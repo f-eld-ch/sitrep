@@ -1696,7 +1696,7 @@ func userLayers(layers []*model.Layer) []*model.Layer {
 	return out
 }
 
-func TestLayersForIncident_PlacedAtStaysTheFirstTime(t *testing.T) {
+func TestLayersForIncident_PlacedAtFollowsTheTimeGiven(t *testing.T) {
 	s := newTestStack(t)
 	ctx := actorCtx()
 
@@ -1725,7 +1725,20 @@ func TestLayersForIncident_PlacedAtStaysTheFirstTime(t *testing.T) {
 		map[string]any{"color": "#ff0000"}, &model.FeatureChangeInput{EffectiveAt: &later})
 	require.NoError(t, err)
 	require.NotNil(t, moved.PlacedAt)
-	assert.True(t, first.Equal(*moved.PlacedAt), "a later change does not move the time")
+	// The time given is the feature's time, later as well as earlier.
+	assert.True(t, later.Equal(*moved.PlacedAt), "a later time moves the placement")
+
+	// An edit without a time leaves it where it is.
+	restyled, err := s.resolver.Mutation().ModifyFeature(ctx, added.ID, nil,
+		map[string]any{"color": "#00ff00"}, nil)
+	require.NoError(t, err)
+	assert.True(t, later.Equal(*restyled.PlacedAt), "an edit without a time does not move it")
+
+	// Not into the future.
+	future := time.Now().UTC().Add(time.Hour)
+	_, err = s.resolver.Mutation().ModifyFeature(ctx, added.ID, nil,
+		map[string]any{"color": "#0000ff"}, &model.FeatureChangeInput{EffectiveAt: &future})
+	require.Error(t, err)
 
 	require.NoError(t, s.proj.CatchUp(ctx))
 
@@ -1736,7 +1749,7 @@ func TestLayersForIncident_PlacedAtStaysTheFirstTime(t *testing.T) {
 		features := userLayers(got)[0].Features
 		require.Len(t, features, 1, name)
 		require.NotNil(t, features[0].PlacedAt, name)
-		assert.True(t, first.Equal(*features[0].PlacedAt), name)
+		assert.True(t, later.Equal(*features[0].PlacedAt), name)
 	}
 }
 

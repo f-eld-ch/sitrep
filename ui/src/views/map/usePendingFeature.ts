@@ -2,7 +2,6 @@ import { useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
 import { useAddFeature } from "api";
-import { IncidentContext } from "utils";
 import { LayerContext } from "./LayerContext";
 import { MapTimeContext } from "./MapTimeContext";
 import { markCreatedForMessage } from "./pending";
@@ -24,7 +23,6 @@ export function usePendingFeature(
   const { state, dispatch } = useContext(LayerContext);
   const { incidentId } = useParams();
   const { asOf, drawingMessage } = useContext(MapTimeContext);
-  const { state: incidentState } = useContext(IncidentContext);
   const [addFeature, addState] = useAddFeature();
   // The command's state is shared by every object drawn, so a failure is remembered for the object
   // it was for: the next one drawn does not open with it.
@@ -37,7 +35,6 @@ export function usePendingFeature(
     saving: addState.loading,
     error:
       addState.error && failedFor === pending.id ? t(`errors.${addState.error.code}`) : undefined,
-    earliest: incidentState.incident?.createdAt,
     onSave: (properties, effectiveAt) => {
       setFailedFor(undefined);
       void addFeature({

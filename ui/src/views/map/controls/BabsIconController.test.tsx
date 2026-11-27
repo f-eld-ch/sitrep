@@ -1,9 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import dayjs from "dayjs";
 import type { Feature, GeoJsonProperties, Geometry } from "geojson";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { IncidentContext } from "utils";
 import de from "../../../i18n/locales/de/translations.json";
 import { LayerContext, type LayerState } from "../LayerContext";
 import { MapTimeContext, type MapTime } from "../MapTimeContext";
@@ -87,20 +85,11 @@ describe("BabsIconController", () => {
     } as unknown as LayerState;
 
     return render(
-      <IncidentContext.Provider
-        value={
-          {
-            state: { incident: { createdAt: new Date("2026-01-01T08:00:00Z") }, loadedForId: "i" },
-            dispatch: vi.fn(),
-          } as never
-        }
-      >
-        <MapTimeContext.Provider value={time}>
-          <LayerContext.Provider value={{ state, dispatch: vi.fn() }}>
-            <BabsIconController />
-          </LayerContext.Provider>
-        </MapTimeContext.Provider>
-      </IncidentContext.Provider>,
+      <MapTimeContext.Provider value={time}>
+        <LayerContext.Provider value={{ state, dispatch: vi.fn() }}>
+          <BabsIconController />
+        </LayerContext.Provider>
+      </MapTimeContext.Provider>,
     );
   }
 
@@ -154,13 +143,12 @@ describe("BabsIconController", () => {
     expect(screen.getByRole("button", { name: "Verwerfen" })).toBeInTheDocument();
   });
 
-  it("lets a saved feature on the free map be changed as of a time after the incident began", () => {
+  it("lets a saved feature on the free map be given any time up to now: no earliest, a latest", () => {
     renderController();
 
-    expect(screen.getByLabelText("Gültig ab")).toHaveAttribute(
-      "min",
-      dayjs(new Date("2026-01-01T08:00:00Z")).format("YYYY-MM-DDTHH:mm"),
-    );
+    const time = screen.getByLabelText("Gültig ab");
+    expect(time).not.toHaveAttribute("min");
+    expect(time).toHaveAttribute("max");
   });
 
   it.each([

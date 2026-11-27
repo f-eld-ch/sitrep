@@ -72,7 +72,7 @@ function renderPopup(
   feature: F,
   extra: {
     pending?: PendingFeatureActions;
-    changeTime?: { earliest?: Date; placedAt?: Date };
+    changeTime?: { placedAt?: Date };
   } = {},
 ) {
   const state = { layers: [], pendingFeatures: [], removedFeatures: [] } as unknown as LayerState;
@@ -336,25 +336,24 @@ describe("FeatureForm reversing a line", () => {
 });
 
 describe("FeatureForm time", () => {
-  const earliest = new Date(2026, 0, 1, 8, 0);
-
   it("does not ask for a time for a feature that is saved and changed as of now", () => {
     renderPopup(point({ icon: aliasFor("1101") }));
 
     expect(screen.queryByLabelText("Gültig ab")).not.toBeInTheDocument();
   });
 
-  it("changes a saved feature as of now unless another time is picked", () => {
-    renderPopup(point({ icon: aliasFor("1101") }), { changeTime: { earliest } });
+  it("changes a saved feature as of now unless another time is picked, never in the future", () => {
+    renderPopup(point({ icon: aliasFor("1101") }), { changeTime: {} });
 
-    expect(label("Gültig ab")).toHaveAttribute("min", "2026-01-01T08:00");
+    expect(label("Gültig ab")).not.toHaveAttribute("min");
+    expect(label("Gültig ab")).toHaveAttribute("max");
     save();
 
     expect(onUpdate.mock.calls[0][0].effectiveAt).toBeUndefined();
   });
 
   it("changes a saved feature as of the picked time", () => {
-    renderPopup(point({ icon: aliasFor("1101") }), { changeTime: { earliest } });
+    renderPopup(point({ icon: aliasFor("1101") }), { changeTime: {} });
 
     fireEvent.change(label("Gültig ab"), { target: { value: "2026-01-02T09:30" } });
     save();
@@ -364,7 +363,7 @@ describe("FeatureForm time", () => {
 
   it("shows the time the feature was placed at, and changes it now unless another is picked", () => {
     renderPopup(point({ icon: aliasFor("1101") }), {
-      changeTime: { earliest, placedAt: new Date(2026, 0, 2, 9, 30) },
+      changeTime: { placedAt: new Date(2026, 0, 2, 9, 30) },
     });
 
     expect(label("Gültig ab")).toHaveValue("2026-01-02T09:30");
@@ -373,9 +372,9 @@ describe("FeatureForm time", () => {
     expect(onUpdate.mock.calls[0][0].effectiveAt).toBeUndefined();
   });
 
-  it("dates the change at the picked time, also before the placement", () => {
+  it("sends the picked time, also before the placement", () => {
     renderPopup(point({ icon: aliasFor("1101") }), {
-      changeTime: { earliest, placedAt: new Date(2026, 0, 2, 9, 30) },
+      changeTime: { placedAt: new Date(2026, 0, 2, 9, 30) },
     });
 
     fireEvent.change(label("Gültig ab"), { target: { value: "2026-01-02T07:15" } });
@@ -385,7 +384,7 @@ describe("FeatureForm time", () => {
   });
 
   it("ignores an unreadable time", () => {
-    renderPopup(point({ icon: aliasFor("1101") }), { changeTime: { earliest } });
+    renderPopup(point({ icon: aliasFor("1101") }), { changeTime: {} });
 
     fireEvent.change(label("Gültig ab"), { target: { value: "" } });
     save();
@@ -397,7 +396,6 @@ describe("FeatureForm time", () => {
 describe("FeatureForm unsaved feature", () => {
   const pendingActions = (over: Partial<PendingFeatureActions> = {}): PendingFeatureActions => ({
     saving: false,
-    earliest: new Date(2026, 0, 1, 8, 0),
     onSave: vi.fn(),
     onDiscard: vi.fn(),
     ...over,

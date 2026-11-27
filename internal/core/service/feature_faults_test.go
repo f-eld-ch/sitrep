@@ -364,6 +364,13 @@ func TestFeatureService_ModifyFeature_Failures(t *testing.T) {
 		require.ErrorIs(t, err, shared.ErrNotFound)
 	})
 
+	t.Run("a time with nothing to change", func(t *testing.T) {
+		at := testAt.Add(-time.Hour)
+
+		_, err := r.svc.ModifyFeature(ctx(), r.placed, nil, nil, inbound.FeatureChange{EffectiveAt: &at}, testActor)
+		require.ErrorIs(t, err, shared.ErrInvalidInput)
+	})
+
 	t.Run("a change before the feature was placed moves its placement back", func(t *testing.T) {
 		before := testAt.Add(-time.Hour)
 		placedAt := testAt

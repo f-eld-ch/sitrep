@@ -123,7 +123,7 @@ func RunFeatureChanges(t *testing.T, f Factory) {
 		assert.Equal(t, point(10.0), currentGeometry(t, b, incID, featureID))
 	})
 
-	t.Run("BackdatedBeforeItsPlacement", func(t *testing.T) {
+	t.Run("RedatedBeforeItsPlacement", func(t *testing.T) {
 		b := f(t)
 		ctx := t.Context()
 		drawn := time.Date(2026, 1, 15, 18, 0, 0, 0, time.UTC)
@@ -136,9 +136,9 @@ func RunFeatureChanges(t *testing.T, f Factory) {
 		ft := feature.New(featureID)
 		require.NoError(t, ft.Place(incID, layerID, point(8.0), map[string]any{"label": "A"},
 			feature.ChangeContext{EffectiveAt: t1400}, "sys", drawn))
-		// A change dated before the placement moves the placement back to it.
+		// A time the user sets before the placement moves the placement back to it.
 		require.NoError(t, ft.Restyle(map[string]any{"label": "B"},
-			feature.ChangeContext{EffectiveAt: t1300}, "sys", drawn))
+			feature.ChangeContext{EffectiveAt: t1300, SetsTime: true}, "sys", drawn))
 
 		require.NoError(t, b.Transactor.WithinTx(ctx, func(ctx context.Context) error {
 			_, err := b.Store.Append(ctx, ft)
@@ -151,11 +151,115 @@ func RunFeatureChanges(t *testing.T, f Factory) {
 
 			changes, err := b.Queries.ListFeatureChanges(ctx, uuid.UUID(incID))
 			require.NoError(t, err)
-			// The backdating is not a change of its own: the placement is there, earlier.
+			// The re-dating is not a change of its own: the placement is there, earlier.
 			require.Len(t, changes, 2)
 			assert.Equal(t, []string{"placed", "restyled"}, []string{changes[0].Change, changes[1].Change})
 			assert.Equal(t, t1300, changes[0].EffectiveAt.UTC())
 			assert.Equal(t, t1300, changes[1].EffectiveAt.UTC())
+		}
+
+		assertHistory(t)
+
+		if b.ResetProjections != nil {
+			require.NoError(t, b.ResetProjections(ctx))
+			require.NoError(t, b.Project(ctx))
+			assertHistory(t)
+		}
+	})
+
+	t.Run("RedatedAfterItsPlacement", func(t *testing.T) {
+		b := f(t)
+		ctx := t.Context()
+		drawn := time.Date(2026, 1, 15, 18, 0, 0, 0, time.UTC)
+		t1400 := time.Date(2026, 1, 15, 14, 0, 0, 0, time.UTC)
+		t1500 := t1400.Add(time.Hour)
+		t1600 := t1500.Add(time.Hour)
+
+		incID, layerID := setup(t, b, drawn)
+		featureID := feature.DeriveID(incID, "draw-1")
+
+		ft := feature.New(featureID)
+		require.NoError(t, ft.Place(incID, layerID, point(8.0), map[string]any{"label": "A"},
+			feature.ChangeContext{EffectiveAt: t1400}, "sys", drawn))
+		require.NoError(t, ft.Restyle(map[string]any{"label": "B"},
+			feature.ChangeContext{EffectiveAt: t1500}, "sys", drawn))
+		// The user sets the time of the feature, later than the placement and its change.
+		require.NoError(t, ft.Restyle(map[string]any{"label": "C"},
+			feature.ChangeContext{EffectiveAt: t1600, SetsTime: true}, "sys", drawn))
+
+		require.NoError(t, b.Transactor.WithinTx(ctx, func(ctx context.Context) error {
+			_, err := b.Store.Append(ctx, ft)
+			return err
+		}))
+		require.NoError(t, b.Project(ctx))
+
+		assertHistory := func(t *testing.T) {
+			t.Helper()
+
+			changes, err := b.Queries.ListFeatureChanges(ctx, uuid.UUID(incID))
+			require.NoError(t, err)
+			// Nothing is older than the feature: the earlier change counts from the new start.
+			require.Len(t, changes, 3)
+
+			for _, c := range changes {
+				assert.Equal(t, t1600, c.EffectiveAt.UTC(), c.Change)
+			}
+		}
+
+		assertHistory(t)
+
+		if b.ResetProjections != nil {
+			require.NoError(t, b.ResetProjections(ctx))
+			require.NoError(t, b.Project(ctx))
+			assertHistory(t)
+		}
+	})
+
+	t.Run("RedatedKeepsTheTimeOfARemoval", func(t *testing.T) {
+		b := f(t)
+		ctx := t.Context()
+		drawn := time.Date(2026, 1, 15, 18, 0, 0, 0, time.UTC)
+		t1400 := time.Date(2026, 1, 15, 14, 0, 0, 0, time.UTC)
+		t1500 := t1400.Add(time.Hour)
+		t1530 := t1500.Add(30 * time.Minute)
+		t1600 := t1500.Add(time.Hour)
+
+		incID, layerID := setup(t, b, drawn)
+		featureID := feature.DeriveID(incID, "draw-1")
+
+		ft := feature.New(featureID)
+		require.NoError(t, ft.Place(incID, layerID, point(8.0), map[string]any{"label": "A"},
+			feature.ChangeContext{EffectiveAt: t1400}, "sys", drawn))
+		require.NoError(t, ft.Remove(shared.DeleteReasonManual,
+			feature.ChangeContext{EffectiveAt: t1500}, "sys", drawn))
+		require.NoError(t, ft.Restore(feature.ChangeContext{EffectiveAt: t1530}, "sys", drawn))
+		require.NoError(t, ft.Restyle(map[string]any{"label": "B"},
+			feature.ChangeContext{EffectiveAt: t1600, SetsTime: true}, "sys", drawn))
+
+		require.NoError(t, b.Transactor.WithinTx(ctx, func(ctx context.Context) error {
+			_, err := b.Store.Append(ctx, ft)
+			return err
+		}))
+		require.NoError(t, b.Project(ctx))
+
+		assertHistory := func(t *testing.T) {
+			t.Helper()
+
+			changes, err := b.Queries.ListFeatureChanges(ctx, uuid.UUID(incID))
+			require.NoError(t, err)
+			require.Len(t, changes, 4)
+
+			at := map[string]time.Time{}
+			for _, c := range changes {
+				at[c.Change] = c.EffectiveAt.UTC()
+			}
+
+			// The start and the geometry and properties changes count from the new start, as in the
+			// aggregate; the removal keeps its own time.
+			assert.Equal(t, t1600, at["placed"])
+			assert.Equal(t, t1600, at["restored"])
+			assert.Equal(t, t1600, at["restyled"])
+			assert.Equal(t, t1500, at["removed"])
 		}
 
 		assertHistory(t)
