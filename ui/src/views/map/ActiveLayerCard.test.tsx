@@ -63,24 +63,6 @@ describe("ActiveLayerCard", () => {
     expect(screen.getByText("Lage Nord")).toBeInTheDocument();
   });
 
-  it("says that the layer is read-only only when asked", () => {
-    const { rerender } = render(<ActiveLayerCard layer={messageMap} />);
-    expect(screen.queryByText("Nur zum Ansehen")).not.toBeInTheDocument();
-
-    rerender(<ActiveLayerCard layer={messageMap} readOnly />);
-    expect(screen.getByText("Nur zum Ansehen")).toBeInTheDocument();
-  });
-
-  it.each([
-    ["fr", "Lecture seule"],
-    ["it", "Sola lettura"],
-  ])("says it in %s", (lang, text) => {
-    language = lang;
-    render(<ActiveLayerCard layer={messageMap} readOnly />);
-
-    expect(screen.getByText(text)).toBeInTheDocument();
-  });
-
   it("names the incident the layer comes from", () => {
     render(<ActiveLayerCard layer={messageMap} />);
 

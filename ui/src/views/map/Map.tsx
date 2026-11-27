@@ -37,6 +37,7 @@ import {
   useModifyFeature,
 } from "api";
 import { ActiveLayerCard } from "./ActiveLayerCard";
+import { ActiveLayerPill } from "./ActiveLayerPill";
 import ActiveWMSLayers from "./ActiveWMSLayers";
 import { BabsIconController } from "./controls/BabsIconController";
 import DrawControl from "./controls/DrawControl";
@@ -276,12 +277,17 @@ function Layers({
             onToggle={() => setHighlightMessage((v) => !v)}
           />
         )}
-        {/* Which layer is active, and that it cannot be drawn on, next to where it is picked. The
-            corners above are taken by the search, the zoom and the draw tools. */}
-        {activeLayerCard && !readOnly && !embedded && !drawingMessage && (
-          <ActiveLayerCard inline layer={activeLayerCard} readOnly={!activeLayerDrawn} />
+        {(!readOnly || stayOnPreferredLayer) && (
+          <LayerControl
+            // Which layer is active, and that it cannot be drawn on, where it is picked. The
+            // corners are taken by the search, the zoom and the draw tools.
+            activeLayer={
+              activeLayerCard && !readOnly && !embedded && !drawingMessage ? (
+                <ActiveLayerPill layer={activeLayerCard} readOnly={!activeLayerDrawn} />
+              ) : undefined
+            }
+          />
         )}
-        {(!readOnly || stayOnPreferredLayer) && <LayerControl />}
         <StyleController />
       </div>
 
