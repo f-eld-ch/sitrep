@@ -547,8 +547,8 @@ describe("fetching the layers", () => {
   });
 
   it.each([
-    // the Lagebild opens on the Nachrichtenkarte, which is read-only there
-    ["an operator", {}, "MESSAGE_MAP", "map"],
+    // the Lagebild opens on a layer to draw on; the Nachrichtenkarte is read-only there
+    ["an operator", {}, "STANDARD", "std"],
     [
       "a map that prefers a standard layer",
       { preferredLayerKind: "STANDARD" as const },
@@ -571,6 +571,14 @@ describe("fetching the layers", () => {
     renderMap(props as MapProps);
 
     expect(state().activeLayer).toBe(expected);
+  });
+
+  it("opens on the Nachrichtenkarte when the incident has no layer to draw on", () => {
+    setLayers(makeLayer("map", { kind: "MESSAGE_MAP", name: "Nachrichtenkarte" }));
+
+    renderMap();
+
+    expect(state().activeLayer).toBe("map");
   });
 
   it("waits for the result before it sets any layer", () => {
@@ -746,6 +754,39 @@ describe("clickable layers", () => {
     dispatch({ type: "TOGGLE_LAYER_VISIBILITY", payload: { layerId: "c", isVisible: false } });
 
     expect(mocks.reporterProps?.clickLayerIds).toEqual(["line-b", "fill-b"]);
+  });
+
+  it("lets the active Nachrichtenkarte be clicked: nothing draws it, so the draw control cannot", () => {
+    setLayers(makeLayer("map", { kind: "MESSAGE_MAP" }), makeLayer("std"));
+    renderMap();
+    dispatch({ type: "SET_ACTIVE_LAYER", payload: { layerId: "map" } });
+
+    expect(mocks.reporterProps?.clickLayerIds).toEqual([
+      "line-map",
+      "fill-map",
+      "line-std",
+      "fill-std",
+    ]);
+  });
+
+  it("lets an active layer of another incident be clicked", () => {
+    setLayers(makeLayer("own"), makeLayer("inherited", { sourceIncidentId: "other" }));
+    renderMap();
+    dispatch({ type: "SET_ACTIVE_LAYER", payload: { layerId: "inherited" } });
+
+    expect(mocks.reporterProps?.clickLayerIds).toEqual([
+      "line-own",
+      "fill-own",
+      "line-inherited",
+      "fill-inherited",
+    ]);
+  });
+
+  it("lets the active layer be clicked while the map shows the past", () => {
+    setLayers(makeLayer("a"), makeLayer("b"));
+    renderMap({ asOf: new Date("2026-01-15T10:00:00Z") });
+
+    expect(mocks.reporterProps?.clickLayerIds).toEqual(["line-a", "fill-a", "line-b", "fill-b"]);
   });
 
   it("lets a read-only map click every visible layer", () => {

@@ -213,7 +213,11 @@ function MapView({ embedded = false, readOnly = false, preferredLayerKind }: Map
         <NavigationControl position="top-left" showCompass={true} visualizePitch={true} />
         <ScaleControl unit={"metric"} position={"bottom-left"} />
         {!readOnly && !embedded && <ExportControl position="bottom-left" />}
-        <Layers readOnly={readOnly} stayOnPreferredLayer={preferredLayerKind !== undefined} />
+        <Layers
+          readOnly={readOnly}
+          embedded={embedded}
+          stayOnPreferredLayer={preferredLayerKind !== undefined}
+        />
         {/* A router has one blocker: the message map's host has its own, which also asks before leaving a message that has work in progress. */}
         {!readOnly && !embedded && <PendingFeaturesGuard />}
         {!readOnly && <DrawControlsLock />}
@@ -225,9 +229,11 @@ function MapView({ embedded = false, readOnly = false, preferredLayerKind }: Map
 
 function Layers({
   readOnly = false,
+  embedded = false,
   stayOnPreferredLayer = false,
 }: {
   readOnly?: boolean;
+  embedded?: boolean;
   stayOnPreferredLayer?: boolean;
 }) {
   const { state } = useContext(LayerContext);
@@ -244,10 +250,12 @@ function Layers({
   const [showRing, setShowRing] = useState(false);
   const activeLayer = incident?.closedAt != null ? undefined : state.activeLayer;
   // Features of layers drawn as plain sources can be clicked; the active layer's selection
-  // comes from the draw control.
+  // comes from the draw control, unless it is shown as a plain source too.
+  const activeLayerDrawn = useActiveLayerDrawn() && !readOnly;
+  const activeLayerCard = state.layers.find((l) => l.layer.id === activeLayer)?.layer;
   const clickLayerIds = clickableLayerIds(
     state.layers
-      .filter((l) => l.isVisible && (readOnly || l.layer?.id !== activeLayer))
+      .filter((l) => l.isVisible && (!activeLayerDrawn || l.layer?.id !== activeLayer))
       .map((l) => l.layer),
     inactiveMapStyle().map((s) => s.id ?? ""),
   );
@@ -277,6 +285,10 @@ function Layers({
 
       {/* Active Layer */}
       {activeLayer !== undefined && !readOnly && <ActiveLayer />}
+      {/* Which layer is active, and that it cannot be drawn on, where the layer is picked. */}
+      {activeLayerCard && !readOnly && !embedded && !drawingMessage && (
+        <ActiveLayerCard layer={activeLayerCard} readOnly={!activeLayerDrawn} />
+      )}
       {!readOnly && !drawingMessage?.locked && <BabsIconController />}
 
       {readOnly ? (
@@ -465,9 +477,11 @@ function LayerFetcher({
   const { asOf, drawingMessage } = useContext(MapTimeContext);
   const syncedLayers = useRef<Layer[] | undefined>(undefined);
   const syncedIncidentId = useRef<string | undefined>(undefined);
-  // The Lagebild opens on the Nachrichtenkarte, read-only; a layer to draw on is picked in the
-  // layer menu. Only a map that asks for another kind starts there.
-  const preferredKind = drawingMessage ? "MESSAGE_MAP" : (preferredLayerKind ?? "MESSAGE_MAP");
+  // The Lagebild opens on a layer to draw on, so a click on the map edits and shows the messages
+  // of what is clicked; the Nachrichtenkarte (read-only there) is picked in the layer menu. An
+  // incident without such a layer opens on the Nachrichtenkarte. Only a map that asks for another
+  // kind starts there.
+  const preferredKind = drawingMessage ? "MESSAGE_MAP" : (preferredLayerKind ?? "STANDARD");
 
   // A fixed point in the past does not change while it is looked at, so it is not polled. The
   // operator's own drawing updates the cache directly; others' arrive on a slow poll.
@@ -608,6 +622,20 @@ function useDrawingAllowed(): boolean {
   return onMessageMap === (drawingMessage !== undefined) && !viewingPast && !drawingMessage?.locked;
 }
 
+/**
+ * Whether the draw control paints the active layer: it is the incident's own layer and can be
+ * drawn on right now. Otherwise the layer is shown like any passive one, and its features are
+ * clicked like theirs (the Nachrichtenkarte on the Lagebild, an inherited layer, the past).
+ */
+function useActiveLayerDrawn(): boolean {
+  const { state } = useContext(LayerContext);
+  const { incidentId } = useParams();
+  const drawingAllowed = useDrawingAllowed();
+  const activeLayer = state.layers.find((l) => l.layer.id === state.activeLayer)?.layer;
+
+  return activeLayer !== undefined && activeLayer.sourceIncidentId === incidentId && drawingAllowed;
+}
+
 function ActiveLayer() {
   const fittedLayer = useRef<string | undefined>(undefined);
   const { current: map } = useMap();
@@ -619,8 +647,7 @@ function ActiveLayer() {
     () => first(state.layers.filter((l) => l.layer.id === state.activeLayer).map((l) => l.layer)),
     [state.layers, state.activeLayer],
   );
-  const isOwnLayer = activeLayer?.sourceIncidentId === incidentId;
-  const drawingAllowed = useDrawingAllowed();
+  const activeLayerDrawn = useActiveLayerDrawn();
   const featureCollection = useMemo(
     () => withPendingFeatures(activeLayer, state.pendingFeatures, state.draftFeatures),
     [activeLayer, state.pendingFeatures, state.draftFeatures],
@@ -684,7 +711,7 @@ function ActiveLayer() {
 
   // Only the draw control paints the active layer's features, so a layer that cannot be
   // drawn on right now is shown like any other passive layer instead of vanishing.
-  if (!isOwnLayer || !drawingAllowed) {
+  if (!activeLayerDrawn) {
     return <InactiveLayer id={state.activeLayer} featureCollection={featureCollection} />;
   }
 

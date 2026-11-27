@@ -347,6 +347,7 @@
   },
   "layerControl": {
     "messageMapHint": "Wird über Meldungen gezeichnet",
+    "activeLayerReadOnly": "Nur zum Ansehen",
     "layers": "Layer",
     "currentIncidentLayers": "Aktuelles Ereignis",
     "addLayer": "Layer hinzufügen",

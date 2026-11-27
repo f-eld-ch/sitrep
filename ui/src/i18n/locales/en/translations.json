@@ -347,6 +347,7 @@
   },
   "layerControl": {
     "messageMapHint": "Drawn through messages",
+    "activeLayerReadOnly": "Read-only",
     "layers": "Layers",
     "currentIncidentLayers": "Current incident",
     "addLayer": "Add layer",

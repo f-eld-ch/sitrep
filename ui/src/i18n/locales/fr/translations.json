@@ -347,6 +347,7 @@
   },
   "layerControl": {
     "messageMapHint": "Dessiné via les messages",
+    "activeLayerReadOnly": "Lecture seule",
     "layers": "Calques",
     "currentIncidentLayers": "Événement actuel",
     "addLayer": "Ajouter un calque",

@@ -2,11 +2,16 @@ import { useTranslation } from "react-i18next";
 import type { Layer } from "types/layer";
 import { layerLabel } from "utils/divisionLabel";
 
-/** Names the layer a read-only map is showing, and the incident it comes from. */
+/**
+ * Names the layer a map is showing, and the incident it comes from. `readOnly` says that the
+ * layer cannot be drawn on right now (the Nachrichtenkarte, an inherited layer, the past).
+ */
 export function ActiveLayerCard({
   layer,
+  readOnly = false,
 }: {
   layer: Pick<Layer, "name" | "kind" | "sourceIncidentName">;
+  readOnly?: boolean;
 }) {
   const { t } = useTranslation();
 
@@ -17,6 +22,11 @@ export function ActiveLayerCard({
         <p className="truncate font-semibold">{layerLabel(layer, t)}</p>
         {layer.sourceIncidentName && (
           <p className="mt-0.5 truncate text-xs text-fg-muted">{layer.sourceIncidentName}</p>
+        )}
+        {readOnly && (
+          <p className="mt-0.5 truncate text-xs text-fg-muted">
+            {t("layerControl.activeLayerReadOnly")}
+          </p>
         )}
       </div>
     </div>

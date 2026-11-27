@@ -347,6 +347,7 @@
   },
   "layerControl": {
     "messageMapHint": "Disegnato tramite i messaggi",
+    "activeLayerReadOnly": "Sola lettura",
     "layers": "Livelli",
     "currentIncidentLayers": "Evento attuale",
     "addLayer": "Aggiungi livello",
