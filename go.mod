@@ -20,7 +20,7 @@ require (
 	github.com/testcontainers/testcontainers-go v0.45.0
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.45.0
 	github.com/vektah/gqlparser/v2 v2.5.64
-	github.com/zitadel/oidc/v3 v3.52.0
+	github.com/zitadel/oidc/v3 v3.53.0
 	go.opentelemetry.io/contrib/bridges/otelslog v0.21.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.72.0
 	go.opentelemetry.io/contrib/instrumentation/runtime v0.72.0
