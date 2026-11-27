@@ -178,6 +178,17 @@ func (s *FeatureService) ModifyFeature(
 	slog.DebugContext(ctx, "modifying feature",
 		slog.String("feature_id", id.String()), slog.String("actor", actor.Sub))
 
+	// A time on its own would succeed and change nothing: it is the time of a move or restyle.
+	if geometry == nil && properties == nil && change.EffectiveAt != nil {
+		err := shared.ValidationError{
+			Field: "effectiveAt", Message: "needs a geometry or properties to change",
+		}
+		span.RecordError(err)
+		recordSpanError(span, err)
+
+		return inbound.FeatureState{}, err
+	}
+
 	var state inbound.FeatureState
 
 	err := s.writeFeature(ctx, id, actor, access.LayerWrite, change,

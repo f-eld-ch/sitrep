@@ -338,10 +338,20 @@ func (h *LayerFeaturesHandler) recordFeatureChange(e eventsourcing.Event) (bool,
 	// A re-dating (the Backdated event) moves the placement; it is not a change of its own.
 	if c.Kind == featurechange.Backdated {
 		for _, r := range h.changes {
-			// The placement moves to the time, and nothing is older than the feature itself.
-			if r.FeatureID == e.StreamID &&
-				(r.Kind == string(featurechange.Placed) || r.EffectiveAt.Before(c.EffectiveAt)) {
+			// The placement moves to the time, and the geometry and properties changes older than it
+			// count from it, as in the aggregate. A removal keeps its time: the aggregate does too.
+			if r.FeatureID != e.StreamID {
+				continue
+			}
+
+			switch featurechange.Kind(r.Kind) {
+			case featurechange.Placed:
 				r.EffectiveAt = c.EffectiveAt
+			case featurechange.Moved, featurechange.Restyled, featurechange.Restored:
+				if r.EffectiveAt.Before(c.EffectiveAt) {
+					r.EffectiveAt = c.EffectiveAt
+				}
+			case featurechange.Backdated, featurechange.Removed:
 			}
 		}
 

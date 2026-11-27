@@ -264,10 +264,13 @@ func recordFeatureChange(ctx context.Context, tx pgx.Tx, e eventsourcing.Event) 
 	// A re-dating (the Backdated event) moves the placement; it is not a change of its own. Setting the time is
 	// idempotent, and so is raising the changes that are older than it.
 	if c.Kind == featurechange.Backdated {
-		// The placement moves to the time, and nothing is older than the feature itself.
+		// The placement moves to the time, and the geometry and properties changes older than it
+		// count from it, as in the aggregate. A removal keeps its time: the aggregate does too.
 		_, err := tx.Exec(ctx, `
 			UPDATE readmodel.feature_change SET effective_at = $2
-			WHERE feature_id = $1 AND (change = 'placed' OR effective_at < $2)`, e.StreamID, c.EffectiveAt)
+			WHERE feature_id = $1
+			  AND (change = 'placed' OR (change IN ('moved', 'restyled', 'restored') AND effective_at < $2))`,
+			e.StreamID, c.EffectiveAt)
 
 		return false, err
 	}

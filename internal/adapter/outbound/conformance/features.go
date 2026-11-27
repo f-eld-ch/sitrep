@@ -215,6 +215,62 @@ func RunFeatureChanges(t *testing.T, f Factory) {
 		}
 	})
 
+	t.Run("RedatedKeepsTheTimeOfARemoval", func(t *testing.T) {
+		b := f(t)
+		ctx := t.Context()
+		drawn := time.Date(2026, 1, 15, 18, 0, 0, 0, time.UTC)
+		t1400 := time.Date(2026, 1, 15, 14, 0, 0, 0, time.UTC)
+		t1500 := t1400.Add(time.Hour)
+		t1530 := t1500.Add(30 * time.Minute)
+		t1600 := t1500.Add(time.Hour)
+
+		incID, layerID := setup(t, b, drawn)
+		featureID := feature.DeriveID(incID, "draw-1")
+
+		ft := feature.New(featureID)
+		require.NoError(t, ft.Place(incID, layerID, point(8.0), map[string]any{"label": "A"},
+			feature.ChangeContext{EffectiveAt: t1400}, "sys", drawn))
+		require.NoError(t, ft.Remove(shared.DeleteReasonManual,
+			feature.ChangeContext{EffectiveAt: t1500}, "sys", drawn))
+		require.NoError(t, ft.Restore(feature.ChangeContext{EffectiveAt: t1530}, "sys", drawn))
+		require.NoError(t, ft.Restyle(map[string]any{"label": "B"},
+			feature.ChangeContext{EffectiveAt: t1600, SetsTime: true}, "sys", drawn))
+
+		require.NoError(t, b.Transactor.WithinTx(ctx, func(ctx context.Context) error {
+			_, err := b.Store.Append(ctx, ft)
+			return err
+		}))
+		require.NoError(t, b.Project(ctx))
+
+		assertHistory := func(t *testing.T) {
+			t.Helper()
+
+			changes, err := b.Queries.ListFeatureChanges(ctx, uuid.UUID(incID))
+			require.NoError(t, err)
+			require.Len(t, changes, 4)
+
+			at := map[string]time.Time{}
+			for _, c := range changes {
+				at[c.Change] = c.EffectiveAt.UTC()
+			}
+
+			// The start and the geometry and properties changes count from the new start, as in the
+			// aggregate; the removal keeps its own time.
+			assert.Equal(t, t1600, at["placed"])
+			assert.Equal(t, t1600, at["restored"])
+			assert.Equal(t, t1600, at["restyled"])
+			assert.Equal(t, t1500, at["removed"])
+		}
+
+		assertHistory(t)
+
+		if b.ResetProjections != nil {
+			require.NoError(t, b.ResetProjections(ctx))
+			require.NoError(t, b.Project(ctx))
+			assertHistory(t)
+		}
+	})
+
 	t.Run("ProjectionIsIdempotentOnReplay", func(t *testing.T) {
 		b := f(t)
 		if b.ResetProjections == nil {

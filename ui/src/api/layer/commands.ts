@@ -145,6 +145,10 @@ export function useModifyFeature(): CommandHook<ModifyFeatureArgs> {
           id: args.id,
           geometry: args.currentGeometry,
           properties: args.currentProperties,
+          // A time the user gives is the feature's time: the label follows it at once.
+          ...(args.change?.effectiveAt && !args.change.messageId
+            ? { placedAt: args.change.effectiveAt.toISOString() }
+            : {}),
         },
       } as never,
       update(cache) {
