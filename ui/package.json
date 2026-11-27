@@ -53,7 +53,7 @@
     "@turf/length": "^7.4.0",
     "@turf/line-intersect": "^7.4.0",
     "@turf/line-split": "^7.4.0",
-    "@uiw/react-md-editor": "^4.2.4",
+    "@uiw/react-md-editor": "^4.2.5",
     "@watergis/maplibre-gl-export": "~6.0.0",
     "clsx": "^2.1.1",
     "dayjs": "^1.11.23",
